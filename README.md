@@ -6,12 +6,12 @@ Application statique française pour écrire, sauvegarder et partager des guides
 
 - **Mes fiches** : créer, consulter, dupliquer, filtrer, importer/exporter une fiche et imprimer en PDF.
 - **Éditeur → Cartes** : chercher par nom ou texte, filtrer par encre, type, coût, extension et encres du deck ; choisir Cartes clés, Core ou Techs et ajouter une carte. Quantités et commentaires restent propres à chaque rubrique. Une carte ne se répète pas deux fois dans une même rubrique.
-- **Catalogue** : consulter les illustrations et règles, actualiser depuis Ravensburger, importer/exporter le catalogue JSON, ajouter/corriger une carte ou la masquer.
-- L’actualisation officielle conserve les ajouts, corrections et cartes masquées. « Catalogue d’origine » réinitialise ces modifications après confirmation. Un import remplace le catalogue local après validation et confirmation.
+- **Catalogue** : consulter les illustrations et règles, importer/exporter le catalogue JSON, ajouter/corriger une carte ou la masquer.
+- « Catalogue d’origine » réinitialise ces modifications après confirmation. Un import remplace le catalogue local après validation et confirmation.
 
 Les fiches restent dans le navigateur (`localStorage`, clé historique `grimoire-v1`). Le catalogue personnalisé utilise **IndexedDB**, séparément des fiches. Ces données ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Les cartes enregistrées dans les fiches sont des copies ; modifier le catalogue ne réécrit pas les fiches existantes.
 
-Si le cache ou l’actualisation réseau est indisponible, le catalogue intégré reste consultable. Une actualisation bloquée par le réseau/CORS peut être remplacée par l’import d’un export JSON normalisé ou du catalogue officiel français brut. Une écriture échouée conserve le catalogue actif et affiche une erreur.
+Le site utilise le catalogue intégré au dépôt. Sa mise à jour depuis Ravensburger se fait uniquement en développement, avec le script décrit plus bas. Vous pouvez importer un export JSON normalisé ou le catalogue officiel français brut. Une écriture échouée conserve le catalogue actif et affiche une erreur.
 
 ## Développement
 

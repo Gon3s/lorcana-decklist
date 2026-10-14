@@ -51,13 +51,6 @@ export function catalogPage({ document, count, warning, busy }) {
       </div>
       <div class="actions">
         <button
-          class="btn small"
-          data-action="catalog-refresh"
-          ${busy || !document ? 'disabled' : ''}
-        >
-          ↻ Actualiser depuis Ravensburger
-        </button>
-        <button
           class="btn small ghost"
           data-action="catalog-reset"
           ${busy || !document ? 'disabled' : ''}
@@ -69,8 +62,8 @@ export function catalogPage({ document, count, warning, busy }) {
     <p class="catalog-feedback ${warning ? 'error' : ''}" role="status">${esc(warning)}</p>
     <div id="catalog-browser"></div>
     <p class="source-note">
-      Catalogue officiel français Ravensburger et modifications locales. L’actualisation conserve
-      vos ajouts, corrections et cartes masquées. L’import JSON remplace votre catalogue local.
+      Catalogue officiel français Ravensburger et modifications locales. L’import JSON remplace
+      votre catalogue local.
     </p>`;
 }
 

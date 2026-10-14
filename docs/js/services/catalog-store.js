@@ -1,4 +1,4 @@
-import { CATALOG_URL, CATALOG_SNAPSHOT_URL } from '../core/constants.js';
+import { CATALOG_SNAPSHOT_URL } from '../core/constants.js';
 import {
   normalizeCatalog,
   withCard,
@@ -88,7 +88,7 @@ export class CatalogRepository {
             this.document = upgraded;
           } catch {
             this.warning =
-              'Catalogue conservé. Les anciens numéros de réimpression n’ont pas pu être actualisés. Réessayez en actualisant le catalogue.';
+              'Catalogue conservé. Les anciens numéros de réimpression n’ont pas pu être actualisés. Réessayez lors de votre prochaine visite.';
           }
         }
         return this.document;
@@ -106,15 +106,6 @@ export class CatalogRepository {
     this.document = valid;
     this.warning = '';
     return valid;
-  }
-  async refresh() {
-    const next = await this.fetchDocument(CATALOG_URL);
-    next.source = CATALOG_URL;
-    next.updated = new Date().toISOString();
-    next.custom = structuredClone(this.document?.custom || []);
-    next.overrides = structuredClone(this.document?.overrides || {});
-    next.hidden = [...(this.document?.hidden || [])];
-    return this.commit(next);
   }
   async import(raw) {
     return this.commit(normalizeCatalog(raw));

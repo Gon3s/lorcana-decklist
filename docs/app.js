@@ -623,12 +623,6 @@ async function handleAction(action, id) {
     case 'catalog-new':
       editCatalogCard();
       break;
-    case 'catalog-refresh':
-      await catalogOperation(
-        () => repository.refresh(),
-        'Catalogue officiel actualisé. Vos modifications locales sont conservées.',
-      );
-      break;
     case 'catalog-import':
       $('#catalog-import-file').click();
       break;

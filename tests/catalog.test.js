@@ -138,32 +138,6 @@ test('a failed cache write never changes the active catalogue', async () => {
   await assert.rejects(() => repo.upsert(card('new')), /quota/);
   assert.equal(effectiveCards(repo.document).length, 3);
 });
-test('refresh retains custom overrides and hidden cards; network failures retain old data', async () => {
-  let saved = withCard(withoutCard(document(), 'b'), card('custom-1'));
-  saved = withCard(saved, card('a', { name: 'Ma correction' }));
-  let fails = false;
-  const repo = new CatalogRepository({
-    cache: {
-      read: async () => saved,
-      write: async (value) => {
-        saved = value;
-      },
-    },
-    fetcher: async () => {
-      if (fails) throw Error('network');
-      return { ok: true, json: async () => ({ cards: [card('a'), card('b'), card('d')] }) };
-    },
-  });
-  await repo.load();
-  await repo.refresh();
-  assert.deepEqual(
-    effectiveCards(repo.document).map((c) => c.name),
-    ['Ma correction', 'Carte d', 'Carte custom-1'],
-  );
-  fails = true;
-  await assert.rejects(() => repo.refresh());
-  assert.equal(effectiveCards(repo.document).length, 3);
-});
 test('bundled catalogue has names, images, rules text, valid types and inks', async () => {
   const doc = normalizeCatalog(
     JSON.parse(await readFile(new URL('../docs/assets/catalog.json', import.meta.url), 'utf8')),

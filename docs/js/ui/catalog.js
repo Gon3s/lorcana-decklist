@@ -18,13 +18,6 @@ export function catalogPage({ document, count, warning, busy }) {
           Importer JSON
         </button>
         <button
-          class="btn small ghost"
-          data-action="catalog-reset"
-          ${busy || !document ? 'disabled' : ''}
-        >
-          Catalogue d’origine
-        </button>
-        <button
           class="btn primary small"
           data-action="catalog-new"
           ${!document || busy ? 'disabled' : ''}

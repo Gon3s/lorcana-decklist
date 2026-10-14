@@ -7,7 +7,7 @@ Application statique française pour écrire, sauvegarder et partager des guides
 - **Mes fiches** : créer, consulter, dupliquer, filtrer, importer/exporter une fiche et imprimer en PDF.
 - **Éditeur → Cartes** : chercher par nom ou texte, filtrer par encre, type, coût, extension et encres du deck ; choisir Cartes clés, Core ou Techs et ajouter une carte. Quantités et commentaires restent propres à chaque rubrique. Une carte ne se répète pas deux fois dans une même rubrique.
 - **Catalogue** : consulter les illustrations et règles, importer/exporter le catalogue JSON, ajouter/corriger une carte ou la masquer.
-- « Catalogue d’origine » réinitialise ces modifications après confirmation. Un import remplace le catalogue local après validation et confirmation.
+- Un import remplace le catalogue local après validation et confirmation.
 
 Les fiches restent dans le navigateur (`localStorage`, clé historique `grimoire-v1`). Le catalogue personnalisé utilise **IndexedDB**, séparément des fiches. Ces données ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Les cartes enregistrées dans les fiches sont des copies ; modifier le catalogue ne réécrit pas les fiches existantes.
 

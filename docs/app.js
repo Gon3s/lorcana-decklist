@@ -673,16 +673,6 @@ async function handleAction(action, id) {
       downloadText(JSON.stringify(state.catalog, null, 2), 'grimoire-catalogue.json');
       toast('Catalogue exporté avec vos modifications.');
       break;
-    case 'catalog-reset':
-      if (
-        await confirmAction(
-          'Restaurer le catalogue d’origine ?',
-          'Les ajouts, corrections et cartes masquées seront retirés du catalogue local. Exportez-le si vous souhaitez les conserver. Les fiches restent inchangées.',
-          'Restaurer',
-        )
-      )
-        await catalogOperation(() => repository.reset(), 'Catalogue intégré restauré.');
-      break;
   }
 }
 

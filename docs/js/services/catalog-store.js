@@ -110,9 +110,6 @@ export class CatalogRepository {
   async import(raw) {
     return this.commit(normalizeCatalog(raw));
   }
-  async reset() {
-    return this.commit(await this.fetchDocument(CATALOG_SNAPSHOT_URL));
-  }
   async upsert(card) {
     return this.commit(withCard(this.document, card));
   }

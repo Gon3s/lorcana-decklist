@@ -6,3 +6,5 @@
 - Cercles, sceaux et animations : CSS du projet.
 
 Grimoire est un projet de fans indépendant, sans affiliation officielle.
+
+- `docs/assets/inks/*.png` : six emblèmes d’encre repris de `Gon3s/duocast-overlay/public/inks` (également présents dans `Gon3s/lorcana-stats/assets/inks`), optimisés en 192 × 192 px en conservant leur transparence. © Disney.

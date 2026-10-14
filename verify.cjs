@@ -9,3 +9,5 @@ run('openEditor(current)');assert(el('#app').innerHTML.includes('APERÇU EN DIRE
 const cs=JSON.parse(fs.readFileSync('docs/assets/catalog.json'));assert(cs.cards.length>2000);assert(cs.cards.every(c=>c.id&&c.name&&Array.isArray(c.set)));console.log('PASS: catalogue de '+cs.cards.length+' cartes');
 
 run('library();app.listeners.click({target:{closest(){return {dataset:{filterInk:"ruby"}}}}})');assert(run('inkFilter')==='ruby');assert(el('#ink-filter').value==='ruby');run('app.listeners.click({target:{closest(){return {dataset:{filterInk:"ruby"}}}}})');assert(run('inkFilter')==='');console.log('PASS: filtre rapide par encre et désélection');
+
+const inkMarkup=run('inksHTML(Object.keys(INKS))');assert((inkMarkup.match(/class="ink-icon"/g)||[]).length===6);assert(!inkMarkup.includes('class="ink-symbol"'));for(const ink of ['amber','amethyst','emerald','ruby','sapphire','steel']){assert(inkMarkup.includes('assets/inks/'+ink+'.png'));assert(fs.readFileSync('docs/assets/inks/'+ink+'.png').subarray(1,4).toString()==='PNG')}console.log('PASS: six emblèmes officiels locaux dans les fiches');

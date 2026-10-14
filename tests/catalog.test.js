@@ -25,7 +25,7 @@ const card = (id, extra = {}) => ({
 const document = () =>
   normalizeCatalog({
     cards: [
-      card('a', { name: 'Éléphant — L’ami', text: 'Piochez une carte.' }),
+      card('a', { name: 'Éléphant - L’ami', text: 'Piochez une carte.' }),
       card('b', { inks: ['ruby', 'amethyst'], cost: 4, type: 'actions', set: ['set2'] }),
       card('c', { inks: ['steel'], cost: 4 }),
     ],
@@ -56,7 +56,7 @@ test('official normalization merges printings and preserves all extensions', () 
   };
   const result = normalizeCatalog(raw);
   assert.equal(result.cards.length, 1);
-  assert.equal(result.cards[0].name, 'Merlin — En chèvre');
+  assert.equal(result.cards[0].name, 'Merlin - En chèvre');
   assert.deepEqual(result.cards[0].set, ['set2', 'set9']);
 });
 test('combined filters search accents, apostrophes and rules text', () => {
@@ -194,4 +194,59 @@ test('IndexedDB catalogue cache persists across repository instances', async () 
   });
   await reloaded.load();
   assert.ok(effectiveCards(reloaded.document).some((card) => card.id === 'custom-persisted'));
+});
+
+test('multi-ink selection includes mono and compatible bicolour cards', () => {
+  const index = createCardIndex(effectiveCards(document()));
+  assert.deepEqual(
+    searchCatalog(index, { inks: ['amethyst', 'ruby'] }).cards.map((card) => card.id),
+    ['b', 'a'],
+  );
+  assert.deepEqual(
+    searchCatalog(index, { inks: ['amethyst'] }).cards.map((card) => card.id),
+    ['a'],
+  );
+  assert.equal(searchCatalog(index, { inks: [] }).total, 3);
+});
+
+test('default order is newest expansion then ascending collector number', () => {
+  const index = createCardIndex([
+    normalizeCard(card('nine', { set: ['set9'], number: 2 })),
+    normalizeCard(card('ten', { set: ['set10'], number: 10 })),
+    normalizeCard(card('two', { set: ['set10'], number: 2 })),
+    normalizeCard(card('one', { set: ['set10'], number: 1 })),
+    normalizeCard(
+      card('reprint', {
+        set: ['set9', 'set10'],
+        number: 3,
+        printings: [
+          { set: 'set9', number: 100 },
+          { set: 'set10', number: 3 },
+        ],
+      }),
+    ),
+  ]);
+  assert.deepEqual(
+    searchCatalog(index).cards.map((card) => card.id),
+    ['one', 'two', 'reprint', 'ten', 'nine'],
+  );
+  assert.deepEqual(
+    searchCatalog(index, { set: 'set9' }).cards.map((card) => card.id),
+    ['nine', 'reprint'],
+  );
+});
+
+test('normalization preserves official zero numbering and removes long dashes', () => {
+  const card = normalizeCard({
+    id: 'zero',
+    name: 'Bruno\u2014Madrigal',
+    inks: ['amethyst'],
+    type: 'characters',
+    set: ['set9'],
+    card_identifier: '0/204 FR 9',
+    text: 'Effet\u2013description',
+  });
+  assert.equal(card.number, 0);
+  assert.equal(card.name, 'Bruno-Madrigal');
+  assert.equal(card.text, 'Effet-description');
 });

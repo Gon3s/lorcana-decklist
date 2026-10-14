@@ -13,7 +13,7 @@ import { createSampleDeck } from '../docs/js/core/sample.js';
 import { loadDecks, saveDecks } from '../docs/js/services/deck-store.js';
 import { DECK_STORAGE_KEY } from '../docs/js/core/constants.js';
 
-const card = { id: 'merlin', name: 'Merlin — En chèvre', image: 'https://example.com/card.png' };
+const card = { id: 'merlin', name: 'Merlin - En chèvre', image: 'https://example.com/card.png' };
 test('legacy exports round-trip images, notes and order without reusing identity', () => {
   const deck = createSampleDeck();
   deck.image = 'data:image/png;base64,aGVsbG8=';
@@ -88,4 +88,13 @@ test('untrusted images and links are removed on import', () => {
   assert.equal(deck.image, '');
   assert.equal(deck.source, '');
   assert.equal(deck.keys[0].image, '');
+});
+
+test('imported legacy names and notes use ASCII hyphens', () => {
+  const value = createSampleDeck();
+  value.name = 'Titre\u2014version';
+  value.keys[0].note = 'Rôle\u2013conseil';
+  const deck = validateDeck(value);
+  assert.equal(deck.name, 'Titre-version');
+  assert.equal(deck.keys[0].note, 'Rôle-conseil');
 });

@@ -12,7 +12,7 @@ async function files(directory) {
   }
   return results;
 }
-const sources = (await files('docs')).filter((path) => /\.js$/.test(path));
+const sources = (await files('docs')).filter((path) => path.endsWith('.js'));
 for (const file of sources) {
   const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (result.status !== 0) throw Error(file + '\n' + result.stderr);
@@ -22,7 +22,7 @@ for (const file of sources) {
 }
 for (const file of (await files('docs')).filter((path) => path.endsWith('.css'))) {
   const source = await readFile(file, 'utf8');
-  for (const match of source.matchAll(/url\(['\"]?([^)'\"]+)['\"]?\)/g)) {
+  for (const match of source.matchAll(/url\(['"]?([^)'"]+)['"]?\)/g)) {
     if (!/^(?:https?:|data:|#|%23)/.test(match[1])) await access(resolve(dirname(file), match[1]));
   }
   for (const match of source.matchAll(/@import\s+url\(['"](\.[^'"]+)['"]\)/g))

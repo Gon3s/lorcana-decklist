@@ -1,4 +1,4 @@
-import { CARD_SECTIONS, INKS } from './js/core/constants.js';
+import { CARD_SECTIONS } from './js/core/constants.js';
 import {
   createDeck,
   decodeDeckExport,
@@ -9,7 +9,7 @@ import {
 } from './js/core/decks.js';
 import { createSampleDeck } from './js/core/sample.js';
 import { createCardIndex, effectiveCards, searchCatalog } from './js/core/catalog.js';
-import { normalize, quantity, uid } from './js/core/utils.js';
+import { normalize, quantity, uid, cleanText } from './js/core/utils.js';
 import { loadDecks, saveDecks } from './js/services/deck-store.js';
 import { CatalogRepository } from './js/services/catalog-store.js';
 import { downloadText, readJSONFile, readDeckImage } from './js/services/files.js';
@@ -38,11 +38,11 @@ const app = $('#app');
 const repository = new CatalogRepository();
 const defaultFilters = () => ({
   query: '',
-  ink: '',
+  inks: [],
   type: '',
   set: '',
   cost: '',
-  sort: 'name',
+  sort: 'set',
   page: 1,
   deckOnly: false,
 });
@@ -136,7 +136,7 @@ function openEditor(deck) {
   state.current = deck;
   state.mode = 'edit';
   state.tab = 'identity';
-  state.filters = defaultFilters();
+  state.filters = { ...defaultFilters(), deckOnly: true, inks: [...deck.inks] };
   renderEditor();
   window.scrollTo(0, 0);
 }
@@ -156,6 +156,7 @@ function browserMarkup() {
   });
 }
 function renderForm() {
+  if (state.mode === 'edit' && state.filters.deckOnly) state.filters.inks = [...state.current.inks];
   const forms = {
     identity: identityForm,
     matchups: matchupsForm,
@@ -256,6 +257,7 @@ function renderResults() {
     context: state.mode === 'edit' ? 'picker' : 'manage',
     target: state.target,
     deck: state.current,
+    selectedSet: state.filters.set,
   });
   $('#catalog-pagination').innerHTML = catalogPagination(result);
 }
@@ -328,6 +330,8 @@ function editCatalogCard(card) {
       inks: data.getAll('inks'),
       type: data.get('type'),
       cost: Number(data.get('cost')),
+      number: data.get('number') ? Number(data.get('number')) : null,
+      printings: undefined,
       image: data.get('image'),
       set: data
         .get('set')
@@ -337,6 +341,8 @@ function editCatalogCard(card) {
       rarity: data.get('rarity'),
       text: data.get('text'),
     };
+    if (card && card.number === next.number && card.set.join(',') === next.set.join(','))
+      next.printings = card.printings;
     const submit = form.querySelector('[type=submit]');
     submit.disabled = true;
     try {
@@ -363,6 +369,13 @@ function selectedCardsChanged() {
 function handleCardFilter(event) {
   const key = event.target.dataset.cardFilter;
   if (!key) return false;
+  if (key === 'deckOnly') {
+    state.filters.deckOnly = event.target.checked;
+    if (event.target.checked) state.filters.inks = [...(state.current?.inks || [])];
+    state.filters.page = 1;
+    renderBrowser();
+    return true;
+  }
   state.filters[key] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
   state.filters.page = 1;
   renderResults();
@@ -373,13 +386,13 @@ app.addEventListener('input', (event) => {
   if (state.mode !== 'edit') return;
   const { field, list, index, prop } = event.target.dataset;
   if (field) {
-    state.current[field] = event.target.value;
+    state.current[field] = cleanText(event.target.value);
     save();
     preview();
   }
   if (list) {
     state.current[list][index][prop] =
-      prop === 'qty' ? quantity(event.target.value) : event.target.value;
+      prop === 'qty' ? quantity(event.target.value) : cleanText(event.target.value);
     save();
     preview();
   }
@@ -391,7 +404,7 @@ app.addEventListener('change', (event) => {
     renderResults();
   }
   if (state.mode === 'edit' && event.target.dataset.field) {
-    state.current[event.target.dataset.field] = event.target.value;
+    state.current[event.target.dataset.field] = cleanText(event.target.value);
     save();
     preview();
   }
@@ -401,6 +414,15 @@ app.addEventListener('click', async (event) => {
   if (!button || button.disabled) return;
   const data = button.dataset;
   try {
+    if (data.catalogInk) {
+      state.filters.deckOnly = false;
+      const index = state.filters.inks.indexOf(data.catalogInk);
+      if (index >= 0) state.filters.inks.splice(index, 1);
+      else state.filters.inks.push(data.catalogInk);
+      state.filters.page = 1;
+      renderBrowser();
+      return;
+    }
     if (data.filterInk) {
       state.inkFilter = state.inkFilter === data.filterInk ? '' : data.filterInk;
       syncInkFilter();
@@ -588,7 +610,11 @@ async function handleAction(action, id) {
       await loadCatalog();
       break;
     case 'catalog-clear-filters':
-      state.filters = defaultFilters();
+      state.filters = {
+        ...defaultFilters(),
+        deckOnly: state.mode === 'edit',
+        inks: state.mode === 'edit' ? [...state.current.inks] : [],
+      };
       renderBrowser();
       break;
     case 'catalog-new':

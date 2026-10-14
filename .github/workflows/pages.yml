@@ -29,6 +29,8 @@ jobs:
           cache: npm
       - name: Install development tools
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Lint and enforce typography
+        run: npm run lint
       - name: Check source and data
         run: npm run check
       - name: Test domain, storage and interface

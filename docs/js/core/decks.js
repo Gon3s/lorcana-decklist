@@ -1,5 +1,5 @@
 import { ARCHETYPES, CARD_SECTIONS, INKS } from './constants.js';
-import { quantity, safeURL, uid } from './utils.js';
+import { quantity, safeURL, uid, cleanText } from './utils.js';
 
 export function createDeck() {
   return {
@@ -49,7 +49,7 @@ export function validateDeck(value, { newIdentity = false } = {}) {
     'mulligan',
     'mulliganMatchup',
   ]) {
-    if (typeof value[key] === 'string') deck[key] = value[key];
+    if (typeof value[key] === 'string') deck[key] = cleanText(value[key]);
   }
   if (!newIdentity && typeof value.id === 'string') deck.id = value.id;
   deck.inks = [...value.inks];
@@ -63,8 +63,8 @@ export function validateDeck(value, { newIdentity = false } = {}) {
     deck[section] = value[section].map((row) => {
       if (!row || typeof row !== 'object') throw new Error('Entrée de fiche invalide.');
       return {
-        name: String(row.name ?? ''),
-        note: String(row.note ?? ''),
+        name: cleanText(row.name),
+        note: cleanText(row.note),
         qty: quantity(row.qty),
         image: safeURL(row.image),
         id: typeof row.id === 'string' ? row.id : undefined,

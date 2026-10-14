@@ -1,5 +1,5 @@
 import { CARD_TYPES, INKS, CATALOG_PAGE_SIZE } from './constants.js';
-import { normalize, safeURL } from './utils.js';
+import { normalize, safeURL, cleanText } from './utils.js';
 
 const TYPE_ALIASES = {
   character: 'characters',
@@ -18,12 +18,12 @@ const TYPE_ALIASES = {
 export function normalizeCard(value, fallbackType = '') {
   if (!value || typeof value !== 'object') throw new Error('Carte invalide.');
   const id = String(value.id ?? value.deck_building_id ?? '').trim();
-  let name = String(value.name ?? '').trim();
-  if (value.subtitle) name += ' — ' + String(value.subtitle);
+  let name = cleanText(value.name).trim();
+  if (value.subtitle) name += ' - ' + cleanText(value.subtitle);
   if (!id || !name) throw new Error('Chaque carte doit avoir un identifiant et un nom.');
   const sets = value.set ?? value.card_sets ?? [];
   if (!Array.isArray(sets)) throw new Error('Extensions invalides.');
-  const questCard = sets.some((set) => /^quest/.test(String(set)));
+  const questCard = sets.some((set) => String(set).startsWith('quest'));
   const inks = [
     ...new Set(
       (value.inks ?? value.magic_ink_colors ?? []).map((ink) => String(ink).toLowerCase()),
@@ -36,16 +36,40 @@ export function normalizeCard(value, fallbackType = '') {
     throw new Error('Coût invalide pour « ' + name + ' ».');
   const type = TYPE_ALIASES[normalize(value.type || fallbackType)] || '';
   if (!CARD_TYPES[type]) throw new Error('Type de carte inconnu pour « ' + name + ' ».');
+  const parsedNumber =
+    String(value.card_identifier ?? '').match(/^(\d+)\//)?.[1] ??
+    String(value.image ?? value.thumbnail_url ?? '').match(/\/(\d+)[_.][^/]*$/)?.[1];
+  const rawNumber = value.number ?? parsedNumber;
+  const number =
+    rawNumber === null || rawNumber === undefined || rawNumber === '' ? null : Number(rawNumber);
+  if (number !== null && (!Number.isInteger(number) || number < 0))
+    throw new Error('Numéro de carte invalide.');
+  const printings = Array.isArray(value.printings)
+    ? value.printings.map((printing) => ({
+        set: String(printing.set),
+        number: printing.number == null ? null : Number(printing.number),
+      }))
+    : sets.map((set) => ({ set: String(set), number }));
+  if (
+    printings.some(
+      (printing) =>
+        !sets.includes(printing.set) ||
+        (printing.number !== null && (!Number.isInteger(printing.number) || printing.number < 0)),
+    )
+  )
+    throw new Error('Numérotation de réimpression invalide.');
   return {
     id,
     name,
     inks,
     cost,
     type,
+    number,
+    printings,
     image: safeURL(value.image ?? value.thumbnail_url),
     set: [...new Set(sets.map(String))],
     rarity: String(value.rarity ?? ''),
-    text: String(value.text ?? value.rules_text ?? '').replaceAll('%', '\n'),
+    text: cleanText(value.text ?? value.rules_text).replaceAll('%', '\n'),
     inkable: typeof value.inkable === 'boolean' ? value.inkable : (value.ink_convertible ?? null),
   };
 }
@@ -67,8 +91,17 @@ export function normalizeCatalog(raw) {
   const byId = new Map();
   for (const card of cards) {
     const previous = byId.get(card.id);
-    if (previous) previous.set = [...new Set([...previous.set, ...card.set])];
-    else byId.set(card.id, card);
+    if (previous) {
+      previous.set = [...new Set([...previous.set, ...card.set])];
+      previous.printings = [
+        ...new Map(
+          [...previous.printings, ...card.printings].map((printing) => [
+            printing.set + ':' + printing.number,
+            printing,
+          ]),
+        ).values(),
+      ];
+    } else byId.set(card.id, card);
   }
   if (!byId.size) throw new Error('Le catalogue ne contient aucune carte exploitable.');
   const custom = (raw.custom ?? []).map((card) => normalizeCard(card));
@@ -87,8 +120,8 @@ export function normalizeCatalog(raw) {
     overrides,
     hidden: Array.isArray(raw.hidden) ? [...new Set(raw.hidden.map(String))] : [],
     sets: Array.isArray(raw.sets)
-      ? raw.sets
-      : (raw.card_sets ?? []).map((set) => ({ id: set.id, name: set.name })),
+      ? raw.sets.map((set) => ({ ...set, name: cleanText(set.name) }))
+      : (raw.card_sets ?? []).map((set) => ({ id: set.id, name: cleanText(set.name) })),
   };
 }
 
@@ -109,12 +142,17 @@ export function createCardIndex(cards) {
 }
 export function searchCatalog(index, filters = {}) {
   const words = normalize(filters.query).split(/\s+/).filter(Boolean);
+  const selectedInks =
+    filters.deckOnly && filters.deckInks?.length
+      ? filters.deckInks
+      : (filters.inks ?? (filters.ink ? [filters.ink] : []));
   const cost = filters.cost === '' || filters.cost == null ? null : Number(filters.cost);
   const matches = index
     .filter(
       ({ card, search }) =>
         words.every((word) => search.includes(word)) &&
-        (!filters.ink || card.inks.includes(filters.ink)) &&
+        (!selectedInks.length ||
+          (card.inks.length > 0 && card.inks.every((ink) => selectedInks.includes(ink)))) &&
         (!filters.type || card.type === filters.type) &&
         (!filters.set || card.set.includes(filters.set)) &&
         (cost === null || card.cost === cost) &&
@@ -123,12 +161,23 @@ export function searchCatalog(index, filters = {}) {
           (card.inks.length > 0 && card.inks.every((ink) => filters.deckInks.includes(ink)))),
     )
     .map((row) => row.card);
-  matches.sort(
-    (a, b) =>
+  matches.sort((a, b) => {
+    if (!filters.sort || filters.sort === 'set') {
+      const left = cardPrinting(a, filters.set);
+      const right = cardPrinting(b, filters.set);
+      return (
+        compareSets(right.set, left.set) ||
+        (left.number ?? Infinity) - (right.number ?? Infinity) ||
+        a.name.localeCompare(b.name, 'fr') ||
+        a.id.localeCompare(b.id)
+      );
+    }
+    return (
       (filters.sort === 'cost' ? a.cost - b.cost : 0) ||
       a.name.localeCompare(b.name, 'fr') ||
-      a.id.localeCompare(b.id),
-  );
+      a.id.localeCompare(b.id)
+    );
+  });
   const size = filters.pageSize || CATALOG_PAGE_SIZE;
   const pages = Math.max(1, Math.ceil(matches.length / size));
   const page = Math.max(1, Math.min(pages, Number(filters.page) || 1));
@@ -157,4 +206,23 @@ export function withoutCard(document, id) {
   delete next.overrides[id];
   if (next.cards.some((card) => card.id === id) && !next.hidden.includes(id)) next.hidden.push(id);
   return next;
+}
+
+/** Main expansions first, newest first; then quest/promo families in natural order. */
+function compareSets(left, right) {
+  const priority = (set) =>
+    /^set\d+$/.test(set) ? 3 : set.startsWith('quest') ? 2 : set.startsWith('promo') ? 1 : 0;
+  return priority(left) - priority(right) || left.localeCompare(right, 'fr', { numeric: true });
+}
+export function cardPrinting(card, selectedSet = '') {
+  const printings = (
+    card.printings?.length
+      ? card.printings
+      : card.set.map((set) => ({ set, number: card.number ?? null }))
+  ).filter((printing) => !selectedSet || printing.set === selectedSet);
+  return (
+    [...printings].sort(
+      (a, b) => compareSets(b.set, a.set) || (a.number ?? Infinity) - (b.number ?? Infinity),
+    )[0] || { set: selectedSet || '', number: null }
+  );
 }

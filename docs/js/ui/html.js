@@ -1,6 +1,7 @@
+import { cleanText } from '../core/utils.js';
 import { INKS } from '../core/constants.js';
 export function esc(value) {
-  return String(value ?? '').replace(
+  return cleanText(value).replace(
     /[&<>"']/g,
     (character) =>
       ({

@@ -1,3 +1,7 @@
+/** Project typography policy: only the ASCII hyphen is allowed. */
+export function cleanText(value) {
+  return String(value ?? '').replace(/[\u2013\u2014]/g, '-');
+}
 export function normalize(value) {
   return String(value ?? '')
     .normalize('NFD')

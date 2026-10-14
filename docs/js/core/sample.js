@@ -13,7 +13,7 @@ export function createSampleDeck() {
     example: true,
     keys: [
       {
-        name: 'Madame Mime — En renard',
+        name: 'Madame Mime - En renard',
         id: 'b632a76e8971d47d81626acf0505fdf0b9a173ba',
         qty: 4,
         note: 'Un outil de tempo : remonter un personnage pour rejouer un effet utile.',
@@ -21,7 +21,7 @@ export function createSampleDeck() {
           'https://api.lorcana.ravensburger.com/images/fr/set2/46_876586e7dbbad24d7577dba0316c97b0fdf8fc81.jpg',
       },
       {
-        name: 'Merlin — En chèvre',
+        name: 'Merlin - En chèvre',
         id: 'a29eca3d8c2f7e753604eac2019e1eb7a21a01b2',
         qty: 4,
         note: 'Une source de lore à intégrer à vos séquences de rebond.',
@@ -40,14 +40,14 @@ export function createSampleDeck() {
     favorable: [
       {
         inks: ['amber', 'amethyst'],
-        name: 'Pression rapide — exemple',
+        name: 'Pression rapide - exemple',
         note: 'À tester : stabiliser le plateau et préserver vos ressources. Cette indication illustre le format, pas une évaluation de la méta.',
       },
     ],
     unfavorable: [
       {
         inks: ['sapphire', 'steel'],
-        name: 'Rampe — exemple',
+        name: 'Rampe - exemple',
         note: 'À tester : identifier les menaces prioritaires et éviter de laisser trop de temps à l’adversaire.',
       },
     ],

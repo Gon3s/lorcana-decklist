@@ -88,7 +88,7 @@ header {
 }
 .brand small {
   display: block;
-  font: 8px var(--sans);
+  font: 14px var(--sans);
   letter-spacing: 1.8px;
   margin-top: 5px;
 }
@@ -106,7 +106,7 @@ nav {
   border: 0;
   padding: 8px 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 .nav.active {
   color: var(--text);
@@ -114,7 +114,7 @@ nav {
 }
 .header-note {
   margin-left: auto;
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -158,7 +158,7 @@ em {
   justify-content: space-between;
   padding: 10px 0;
   gap: 15px;
-  font-size: 8px;
+  font-size: 14px;
   letter-spacing: 1.3px;
 }
 .hero {
@@ -173,7 +173,7 @@ em {
   position: relative;
 }
 .eyebrow {
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -219,7 +219,7 @@ em {
   border-radius: 0;
   background: transparent;
   color: var(--text);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   transition:
@@ -241,7 +241,7 @@ em {
   padding: 14px 22px;
   min-width: 180px;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 14px;
 }
 .hero .btn span {
   font-size: 20px;
@@ -250,7 +250,7 @@ em {
 .btn.small {
   padding: 7px 11px;
   min-height: 31px;
-  font-size: 10px;
+  font-size: 14px;
   gap: 8px;
 }
 .btn.ghost {
@@ -262,7 +262,7 @@ em {
 }
 .hero-caption {
   display: block;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1.3px;
   margin-top: 15px;
   color: var(--muted);
@@ -302,7 +302,7 @@ em {
   position: absolute;
   top: 24px;
   left: 23px;
-  font-size: 8px;
+  font-size: 14px;
   letter-spacing: 1.1px;
   line-height: 1.5;
   color: #536549;
@@ -370,7 +370,7 @@ em {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1px;
   color: #536549;
 }
@@ -395,12 +395,12 @@ em {
   letter-spacing: -0.8px;
 }
 .intro-strip p {
-  font-size: 11px;
+  font-size: 14px;
   margin: 0;
 }
 .intro-strip .mini {
   margin-left: auto;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1.3px;
   color: var(--muted);
   padding-top: 12px;
@@ -438,7 +438,7 @@ em {
 }
 .toolbar input,
 .toolbar select {
-  font-size: 10px;
+  font-size: 14px;
   border: 0;
   border-right: 1px solid var(--line);
   background: transparent;
@@ -450,7 +450,7 @@ em {
   padding-left: 5px;
 }
 .count {
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   white-space: nowrap;
   text-transform: uppercase;
@@ -504,7 +504,7 @@ select {
   display: flex;
   justify-content: space-between;
   padding: 9px 0;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1.1px;
 }
 .deck-cover {
@@ -550,7 +550,7 @@ select {
   background: #f8f5eb;
   color: #354333;
   border: 1px solid #d0d5c8;
-  font-size: 9px;
+  font-size: 14px;
   padding: 4px 7px;
   line-height: 1.1;
 }
@@ -572,7 +572,7 @@ select {
   margin-bottom: 10px;
 }
 .tag {
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 4px 0;
@@ -591,7 +591,7 @@ select {
   cursor: pointer;
 }
 .deck-body p {
-  font-size: 11px;
+  font-size: 14px;
   margin: 0 0 19px;
   line-height: 1.7;
   min-height: 38px;
@@ -605,7 +605,7 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--muted);
   padding-top: 8px;
 }
@@ -614,7 +614,7 @@ select {
   background: none;
   padding: 5px 0;
   color: var(--green);
-  font-size: 9px;
+  font-size: 14px;
 }
 .cover-cards {
   position: absolute;
@@ -670,7 +670,7 @@ select {
   position: absolute;
   top: 23px;
   left: 25px;
-  font-size: 7px !important;
+  font-size: 14px !important;
   letter-spacing: 1.3px;
 }
 .new-card b {
@@ -687,13 +687,13 @@ select {
   font-size: 1.14em;
 }
 .new-card > span:last-child {
-  font-size: 10px;
+  font-size: 14px;
   border-top: 1px solid #aeb99b;
   width: 100%;
   padding-top: 13px;
 }
 .bottom-tip {
-  font-size: 8px;
+  font-size: 14px;
   letter-spacing: 0.3px;
   margin-top: 27px;
   color: var(--muted);
@@ -707,7 +707,7 @@ footer {
   margin: 0 5%;
   border-top: 2px solid var(--text);
   padding: 20px 0 30px;
-  font-size: 8px;
+  font-size: 14px;
   letter-spacing: 0.4px;
   color: var(--muted);
 }
@@ -737,7 +737,7 @@ footer > span:first-child {
   background: none;
   color: var(--muted);
   padding: 6px 0;
-  font-size: 11px;
+  font-size: 14px;
 }
 .workspace-title {
   font: 500 45px var(--display);
@@ -768,7 +768,7 @@ footer > span:first-child {
   background: transparent;
   padding: 17px 3px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
   white-space: nowrap;
 }
 .tab.active {
@@ -781,13 +781,13 @@ footer > span:first-child {
 }
 label {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 9px;
   color: #3d4839;
 }
 label small {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--muted);
 }
@@ -798,7 +798,7 @@ label small {
   margin-bottom: 0;
 }
 .field-help {
-  font-size: 10px;
+  font-size: 14px;
   margin: 7px 0 16px;
   color: var(--muted);
   line-height: 1.7;
@@ -821,7 +821,7 @@ label small {
   background: #fbf9f1;
   border-radius: 0;
   padding: 9px;
-  font-size: 10px;
+  font-size: 14px;
   color: #5a6352;
 }
 .ink-option.selected {
@@ -849,7 +849,7 @@ label small {
   margin: 12px 0 7px;
 }
 .dropzone p {
-  font-size: 10px;
+  font-size: 14px;
   margin: 0;
 }
 .dropzone img {
@@ -880,7 +880,7 @@ label small {
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .row-tools {
   display: flex;
@@ -890,7 +890,7 @@ label small {
   border: 1px solid var(--line);
   background: transparent;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--green);
 }
 .iconbtn:hover {
@@ -902,12 +902,12 @@ label small {
   gap: 10px;
 }
 .repeat-row input {
-  font-size: 11px;
+  font-size: 14px;
 }
 .repeat-row textarea {
   margin-top: 10px;
   min-height: 65px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .card-search-results {
   max-height: 350px;
@@ -921,7 +921,7 @@ label small {
   padding: 12px 0;
   background: transparent;
   border-bottom: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 14px;
 }
 .result-card img {
   width: 45px;
@@ -932,7 +932,7 @@ label small {
   display: block;
   color: var(--muted);
   margin-top: 5px;
-  font-size: 9px;
+  font-size: 14px;
 }
 .preview-panel {
   position: sticky;
@@ -941,7 +941,7 @@ label small {
 .preview-label {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 14px;
   letter-spacing: 1.1px;
   color: var(--muted);
   margin-bottom: 12px;
@@ -976,12 +976,12 @@ label small {
   border-bottom: 1px solid #aab69c;
   padding-bottom: 11px;
   margin-bottom: 24px;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1px;
   color: #617052;
 }
 .sheet-head .eyebrow {
-  font-size: 7px;
+  font-size: 14px;
   margin-bottom: 14px;
 }
 .sheet-head h2 {
@@ -991,7 +991,7 @@ label small {
   text-wrap: balance;
 }
 .sheet-head p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.75;
   white-space: pre-wrap;
   color: #65705b;
@@ -1015,7 +1015,7 @@ label small {
   color: var(--green);
 }
 .sheet-section p {
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.8;
   white-space: pre-wrap;
   margin: 6px 0 15px;
@@ -1039,16 +1039,16 @@ label small {
   box-shadow: 2px 3px 4px #28352220;
 }
 .sheet-card strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.5;
 }
 .sheet-card p {
-  font-size: 10px;
+  font-size: 14px;
   margin: 4px 0 0;
 }
 .sheet-pill {
-  font-size: 9px;
+  font-size: 14px;
   border: 1px solid #b3bea1;
   color: var(--green);
   padding: 2px 5px;
@@ -1066,16 +1066,16 @@ label small {
   background: #f7eee3;
 }
 .sheet-match strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
 }
 .sheet-match .ink-dot {
-  font-size: 8px;
+  font-size: 14px;
 }
 .sheet-footer {
   padding: 14px 30px;
   border-top: 1px solid var(--line);
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 0.5px;
   color: var(--muted);
   display: flex;
@@ -1135,7 +1135,7 @@ label small {
   background: var(--green);
   color: #f7f5e9;
   padding: 14px 23px;
-  font-size: 11px;
+  font-size: 14px;
   z-index: 99;
   max-width: 90vw;
   border-left: 4px solid var(--lime);
@@ -1159,7 +1159,7 @@ dialog h2 {
   font: 35px var(--serif);
 }
 dialog p {
-  font-size: 12px;
+  font-size: 14px;
 }
 dialog .actions {
   justify-content: end;
@@ -1167,10 +1167,10 @@ dialog .actions {
 }
 .error {
   color: #963c36;
-  font-size: 11px;
+  font-size: 14px;
 }
 .source-note {
-  font-size: 9px;
+  font-size: 14px;
   line-height: 1.8;
   color: var(--muted);
   margin-top: 20px;
@@ -1237,7 +1237,7 @@ dialog .actions {
     top: 31%;
   }
   .art-bottom {
-    font-size: 6px;
+    font-size: 14px;
   }
   .card-one {
     transform: translate(-50px, 0) rotate(-19deg);
@@ -1274,7 +1274,7 @@ dialog .actions {
     font-size: 35px;
   }
   .header-note {
-    font-size: 8px;
+    font-size: 14px;
   }
 }
 @media (max-width: 850px) {
@@ -1291,14 +1291,14 @@ dialog .actions {
     font-size: 70px;
   }
   .hero .eyebrow {
-    font-size: 7px;
+    font-size: 14px;
     letter-spacing: 0.7px;
   }
   .hero-art {
     min-height: 410px;
   }
   .art-note {
-    font-size: 7px;
+    font-size: 14px;
   }
   .art-card {
     width: 140px;
@@ -1338,7 +1338,7 @@ dialog .actions {
     min-height: 350px;
   }
   .issue-line {
-    font-size: 7px;
+    font-size: 14px;
   }
   .issue-line span:last-child {
     display: none;
@@ -1362,20 +1362,20 @@ dialog .actions {
     margin-right: 3px;
   }
   .brand small {
-    font-size: 6px;
+    font-size: 14px;
     letter-spacing: 1.1px;
   }
   nav {
     gap: 18px;
   }
   .nav {
-    font-size: 10px;
+    font-size: 14px;
   }
   main {
     padding: 0 6% 40px;
   }
   .issue-line {
-    font-size: 6px;
+    font-size: 14px;
     letter-spacing: 0.8px;
     gap: 6px;
     padding: 9px 0;
@@ -1395,14 +1395,14 @@ dialog .actions {
     letter-spacing: -3px;
   }
   .hero .eyebrow {
-    font-size: 7px;
+    font-size: 14px;
   }
   .hero p {
-    font-size: 12px;
+    font-size: 14px;
     margin-bottom: 18px;
   }
   .hero-caption {
-    font-size: 6px;
+    font-size: 14px;
   }
   .hero-art {
     min-height: 300px;
@@ -1419,7 +1419,7 @@ dialog .actions {
     left: 20%;
   }
   .art-note {
-    font-size: 6px;
+    font-size: 14px;
     top: 17px;
     left: 17px;
   }
@@ -1431,7 +1431,7 @@ dialog .actions {
     bottom: 17px;
     left: 17px;
     right: 17px;
-    font-size: 6px;
+    font-size: 14px;
   }
   .art-bottom span:last-child {
     display: block;
@@ -1456,7 +1456,7 @@ dialog .actions {
     font-size: 26px;
   }
   .intro-strip p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .toolbar {
     flex-wrap: wrap;
@@ -1484,14 +1484,14 @@ dialog .actions {
   }
   .toolbar select {
     width: 50%;
-    font-size: 10px;
+    font-size: 14px;
     padding: 11px 5px;
   }
   .toolbar select:last-child {
     border-right: 0;
   }
   .count {
-    font-size: 8px;
+    font-size: 14px;
   }
   .deck-grid {
     grid-template-columns: 1fr;
@@ -1511,16 +1511,16 @@ dialog .actions {
     font-size: 35px;
   }
   .deck-body p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .deck-issue {
-    font-size: 8px;
+    font-size: 14px;
   }
   .deck-bottom {
-    font-size: 9px;
+    font-size: 14px;
   }
   .deck-bottom button {
-    font-size: 10px;
+    font-size: 14px;
   }
   .new-card {
     margin-top: 0;
@@ -1535,7 +1535,7 @@ dialog .actions {
     margin-bottom: 13px;
   }
   .bottom-tip {
-    font-size: 8px;
+    font-size: 14px;
   }
   .workspace-top {
     flex-wrap: wrap;
@@ -1567,7 +1567,7 @@ dialog .actions {
     gap: 16px;
   }
   .tab {
-    font-size: 10px;
+    font-size: 14px;
   }
   .sheet-head,
   .sheet-body {
@@ -1587,13 +1587,13 @@ dialog .actions {
     font-size: 46px;
   }
   .read-layout .sheet-head p {
-    font-size: 13px;
+    font-size: 14px;
   }
   .read-layout .sheet-section p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .read-layout .sheet-card strong {
-    font-size: 12px;
+    font-size: 14px;
   }
   .read-layout .sheet-card img {
     width: 65px;
@@ -1608,11 +1608,11 @@ dialog .actions {
     margin: 0 6%;
     flex-direction: column;
     gap: 10px;
-    font-size: 7px;
+    font-size: 14px;
     padding: 18px 0 25px;
   }
   .preview-label {
-    font-size: 7px;
+    font-size: 14px;
   }
   .hero-art:hover .card-three {
     transform: translate(80px, -12px) rotate(23deg);

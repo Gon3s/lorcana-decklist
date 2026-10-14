@@ -25,15 +25,15 @@ export function collectionPage({ query, inkFilter, typeFilter }) {
           <img
             class="art-card card-one"
             src="https://api.lorcana.ravensburger.com/images/fr/set5/48_9ae1df04043e47571bfedeb4f3edeefacbf40e15.jpg"
-            alt="Elsa — Le cinquième esprit"
+            alt="Elsa - Le cinquième esprit"
           /><img
             class="art-card card-two"
             src="https://api.lorcana.ravensburger.com/images/fr/set4/187_46a9b3a722ce799f8e5e39216049ab70420dbdbe.jpg"
-            alt="Mickey Mouse — Sorcier espiègle"
+            alt="Mickey Mouse - Sorcier espiègle"
           /><img
             class="art-card card-three"
             src="https://api.lorcana.ravensburger.com/images/fr/set3/89_167b46d6d5fb24ab6f368c08de8d968becf11f0c.jpg"
-            alt="Stitch — Agent sous couverture"
+            alt="Stitch - Agent sous couverture"
           />
         </div>
         <div class="magic-seal"><span>✧</span> L’IMAGINATION PREND VIE</div>

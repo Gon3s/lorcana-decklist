@@ -1,4 +1,4 @@
-# Grimoire — Fiches de decks Lorcana
+# Grimoire - Fiches de decks Lorcana
 
 Application statique française pour écrire, sauvegarder et partager des guides de decks. Site : https://gon3s.github.io/lorcana-decklist/
 
@@ -20,9 +20,10 @@ Node.js **22 ou supérieur** et npm. Les dépendances sont exclusivement des out
 ```sh
 npm ci
 npm run serve         # sources sur http://localhost:8080
+npm run lint          # Oxlint et règles de typographie
 npm run check         # syntaxe, imports, actifs et catalogue
 npm test              # domaine, stockage et parcours DOM
-npm run format        # formatage Prettier
+npm run format        # formatage Oxfmt
 npm run format:check
 npm run build         # publication statique dans _site/
 ```
@@ -66,7 +67,7 @@ Source : https://api.lorcana.ravensburger.com/v3/catalog/fr . L’instantané fo
 
 ## Tests et publication
 
-GitHub Actions (`.github/workflows/pages.yml`) installe les dépendances depuis `package-lock.json`, vérifie le code et les données, exécute les tests et le contrôle de formatage, construit le site puis publie `_site/` sur Pages. Les validations s’exécutent sur les pull requests. La publication s’exécute uniquement depuis `main`, à chaque push ou lancement manuel.
+GitHub Actions (`.github/workflows/pages.yml`) installe les dépendances depuis `package-lock.json`, vérifie le code et les données, exécute les tests et le contrôle de formatage Oxfmt, construit le site puis publie `_site/` sur Pages. Les validations s’exécutent sur les pull requests. La publication s’exécute uniquement depuis `main`, à chaque push ou lancement manuel.
 
 Dans Settings → Pages, la source est **GitHub Actions**. Aucun secret personnel n’est nécessaire. Les tests DOM ne remplacent pas une vérification visuelle dans un vrai navigateur : contrôler aussi les petits écrans, les dialogues et l’impression lors des changements de mise en page.
 
@@ -75,3 +76,11 @@ Lors d’un changement d’adresse, exporter les fiches depuis l’ancienne adre
 ## Visuels
 
 Voir [ASSETS.md](ASSETS.md) pour les sources. Projet de fans indépendant. Disney Lorcana © Disney.
+
+## Règles d’interface
+
+- Texte affiché au minimum en 14 px, y compris les labels, filtres, métadonnées et boutons.
+- Les caractères U+2013 et U+2014 sont interdits dans les sources, contenus et données. Utiliser le trait d’union ASCII. Le contrôle `npm run lint` fait échouer la CI en cas de réintroduction. Les imports normalisent également ces caractères.
+- Le sélecteur des cartes accepte plusieurs encres. Une carte bicolore doit avoir ses deux encres autorisées. Dans l’éditeur, les encres du deck sont sélectionnées par défaut ; la sélection manuelle permet de les ajuster.
+- Tri initial : extension principale la plus récente, puis numéro de collection croissant. Lorsqu’une extension est filtrée, son numéro de réimpression est utilisé.
+- Oxlint assure le linting ; Oxfmt assure le formatage. Les deux sont exécutés dans GitHub Actions.

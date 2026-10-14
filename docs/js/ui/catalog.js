@@ -1,5 +1,6 @@
+import { cardPrinting } from '../core/catalog.js';
 import { CARD_SECTIONS, CARD_TYPES, INKS } from '../core/constants.js';
-import { esc, inksHTML, selectOptions } from './html.js';
+import { esc, inkIcon, inksHTML, selectOptions } from './html.js';
 import { formatDate, safeURL } from '../core/utils.js';
 
 export function catalogPage({ document, count, warning, busy }) {
@@ -111,16 +112,22 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
           autocomplete="off"
         />
       </div>
-      <div class="field">
-        <label for="card-ink">Encre</label
-        ><select id="card-ink" data-card-filter="ink">
-          ${selectOptions(
-            Object.entries(INKS).map(([id, [name]]) => [id, name]),
-            filters.ink,
-            'Toutes',
-          )}
-        </select>
-      </div>
+      <fieldset class="catalog-ink-filters">
+        <legend>Encres autorisées - sélection multiple</legend>
+        <div class="catalog-ink-buttons">
+          ${Object.entries(INKS)
+            .map(
+              ([ink, [name, color]]) => `
+          <button type="button" class="ink-option ${filters.inks?.includes(ink) ? 'selected' : ''}"
+            style="--ink:${color}" data-catalog-ink="${ink}" aria-pressed="${filters.inks?.includes(ink) || false}">${inkIcon(ink)}${name}</button>`,
+            )
+            .join('')}
+        </div>
+        <p class="field-help">
+          Sans sélection, toutes les encres sont affichées. Une carte bicolore doit utiliser deux
+          encres sélectionnées.
+        </p>
+      </fieldset>
       <div class="field">
         <label for="card-type">Type</label
         ><select id="card-type" data-card-filter="type">
@@ -131,7 +138,7 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
         <label for="card-set">Extension</label
         ><select id="card-set" data-card-filter="set">
           ${selectOptions(
-            [...sets].sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true })),
+            [...sets].sort((a, b) => b[0].localeCompare(a[0], 'fr', { numeric: true })),
             filters.set,
             'Toutes',
           )}
@@ -154,6 +161,7 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
         ><select id="card-sort" data-card-filter="sort">
           ${selectOptions(
             [
+              ['set', 'Extension décroissante, numéro croissant'],
               ['name', 'Nom'],
               ['cost', 'Coût puis nom'],
             ],
@@ -174,10 +182,11 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
   </section>`;
 }
 
-export function catalogResults(result, { context, target, deck }) {
+export function catalogResults(result, { context, target, deck, selectedSet }) {
   return (
     result.cards
       .map((card) => {
+        const printing = cardPrinting(card, selectedSet);
         const present = context === 'picker' && deck?.[target]?.some((row) => row.id === card.id);
         return /* HTML */ `<article class="catalog-card">
           <button
@@ -190,6 +199,7 @@ export function catalogResults(result, { context, target, deck }) {
           <div class="catalog-card-info">
             <h3>${esc(card.name)}</h3>
             <p>${esc(CARD_TYPES[card.type])} · Coût ${card.cost}</p>
+            <p>${esc(printing.set)}${printing.number !== null ? ' · #' + printing.number : ''}</p>
             <div class="catalog-card-inks">${inksHTML(card.inks)}</div>
           </div>
           <div class="catalog-card-actions">
@@ -252,11 +262,11 @@ export function catalogCardForm(card = {}) {
         required
         maxlength="300"
         value="${esc(card.name)}"
-        placeholder="Personnage — Version"
+        placeholder="Personnage - Version"
       />
     </div>
     <fieldset class="catalog-ink-fieldset">
-      <legend>Encres * — 1 ou 2 maximum</legend>
+      <legend>Encres * - 1 ou 2 maximum</legend>
       ${Object.entries(INKS)
         .map(
           ([id, [name]]) =>
@@ -290,6 +300,17 @@ export function catalogCardForm(card = {}) {
           value="${card.cost ?? 0}"
         />
       </div>
+    </div>
+    <div class="field">
+      <label for="edit-card-number">Numéro dans l’extension</label
+      ><input
+        id="edit-card-number"
+        name="number"
+        type="number"
+        min="0"
+        value="${card.number ?? ''}"
+        placeholder="Non renseigné"
+      />
     </div>
     <div class="field">
       <label for="edit-card-image">Illustration (URL HTTPS)</label

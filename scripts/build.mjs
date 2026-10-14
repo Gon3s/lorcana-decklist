@@ -25,9 +25,9 @@ for (const [path, metadata] of Object.entries(result.metafile.outputs)) {
   if (!metadata.entryPoint) continue;
   const relative = path.replace(output + '/', '');
   if (metadata.entryPoint === 'docs/app.js')
-    html = html.replace(/src="app\.js(?:\?[^\"]*)?"/, 'src="' + relative + '"');
+    html = html.replace(/src="app\.js(?:\?[^"]*)?"/, 'src="' + relative + '"');
   if (metadata.entryPoint === 'docs/style.css')
-    html = html.replace(/href="style\.css(?:\?[^\"]*)?"/, 'href="' + relative + '"');
+    html = html.replace(/href="style\.css(?:\?[^"]*)?"/, 'href="' + relative + '"');
 }
 if (html.includes('src="app.js') || html.includes('href="style.css'))
   throw Error('Entry asset replacement failed.');

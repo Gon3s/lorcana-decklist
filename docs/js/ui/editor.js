@@ -27,7 +27,7 @@ export function identityForm(current) {
   return (
     field(current, 'Nom du deck *', 'name', 'Ex. Saphir Acier · Ramp') +
     /* HTML */ `<div class="field">
-      <label>Encres du deck * <small>— 1 ou 2 maximum</small></label
+      <label>Encres du deck * <small>- 1 ou 2 maximum</small></label
       >${inkOptions(current.inks)}
     </div>` +
     field(current, 'En quelques mots', 'description', 'Quel est le plan de votre deck ?', true) +

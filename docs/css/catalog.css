@@ -7,7 +7,7 @@
   white-space: nowrap;
 }
 #save-status {
-  font-size: 10px;
+  font-size: 14px;
 }
 .catalog-heading {
   display: flex;
@@ -21,7 +21,7 @@
 }
 .catalog-heading p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 .catalog-summary {
   display: flex;
@@ -35,7 +35,7 @@
   color: var(--accent);
 }
 .catalog-summary span {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .catalog-management {
@@ -48,16 +48,16 @@
   justify-content: space-between;
 }
 .catalog-management strong {
-  font-size: 13px;
+  font-size: 14px;
   color: #e5cea0;
 }
 .catalog-management p {
   margin: 9px 0;
-  font-size: 11px;
+  font-size: 14px;
   color: #a4b4d0;
 }
 .catalog-management small {
-  font-size: 10px;
+  font-size: 14px;
   color: #8296b9;
 }
 .catalog-management .actions {
@@ -66,7 +66,7 @@
 }
 .catalog-feedback {
   min-height: 20px;
-  font-size: 11px;
+  font-size: 14px;
   margin: 15px 0;
 }
 .catalog-browser {
@@ -83,7 +83,7 @@
   margin-bottom: 22px;
 }
 .catalog-picker-heading strong {
-  font-size: 12px;
+  font-size: 14px;
   color: #e0c88e;
 }
 .catalog-editor-title {
@@ -102,12 +102,12 @@
   margin: 0;
 }
 .catalog-filters label {
-  font-size: 10px;
+  font-size: 14px;
   color: #a4b4d0;
 }
 .catalog-filters select,
 .catalog-filters input {
-  font-size: 11px;
+  font-size: 14px;
   min-height: 39px;
   padding: 8px;
 }
@@ -127,7 +127,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 400;
-  font-size: 11px;
+  font-size: 14px;
   margin: 0;
 }
 .checkbox-label input {
@@ -142,10 +142,10 @@
   padding: 4px 0;
   text-decoration: underline;
   text-underline-offset: 4px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .catalog-result-count {
-  font-size: 10px;
+  font-size: 14px;
   color: #8ca1c2;
   padding: 12px 0 18px;
   border-top: 1px solid #344766;
@@ -194,15 +194,15 @@
   gap: 15px;
 }
 .catalog-card-visual small {
-  font: 10px var(--sans);
+  font: 14px var(--sans);
 }
 .catalog-card-info h3 {
-  font: 600 11px/1.6 var(--sans);
+  font: 600 14px/1.6 var(--sans);
   margin: 11px 0 5px;
   color: #dce3f1;
 }
 .catalog-card-info > p {
-  font-size: 9px;
+  font-size: 14px;
   color: #8da3c5;
   margin: 0 0 8px;
 }
@@ -213,7 +213,7 @@
   margin-bottom: 10px;
 }
 .catalog-card-inks .ink-dot {
-  font-size: 7px;
+  font-size: 14px;
   padding: 3px 4px;
   gap: 3px;
 }
@@ -230,7 +230,7 @@
 .catalog-card-actions .btn {
   flex: 1;
   padding: 7px 5px;
-  font-size: 9px;
+  font-size: 14px;
   white-space: normal;
   line-height: 1.5;
   min-height: 33px;
@@ -243,7 +243,7 @@
   margin-top: 24px;
 }
 .catalog-pagination > span {
-  font-size: 10px;
+  font-size: 14px;
   color: #9bacc9;
 }
 .catalog-empty {
@@ -272,7 +272,7 @@
   align-items: flex-start;
 }
 .editor-panel .catalog-picker-heading .btn {
-  font-size: 9px;
+  font-size: 14px;
   padding: 6px;
 }
 .deck-card-section {
@@ -288,7 +288,7 @@
   font-size: 17px;
 }
 .section-count {
-  font: 11px var(--sans);
+  font: 14px var(--sans);
   border: 1px solid #6e604388;
   color: #a99670;
   padding: 2px 6px;
@@ -340,7 +340,7 @@
   border: 1px solid #435675;
 }
 .catalog-ink-fieldset legend {
-  font-size: 11px;
+  font-size: 14px;
   color: #a4b4d0;
   padding: 0 5px;
 }
@@ -363,7 +363,7 @@
   font: 500 24px/1.5 var(--serif);
 }
 .card-detail p {
-  font-size: 12px;
+  font-size: 14px;
 }
 .card-rules {
   white-space: pre-wrap;
@@ -420,7 +420,7 @@
     font-size: 25px;
   }
   .catalog-heading p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .catalog-summary {
     padding-top: 28px;
@@ -429,7 +429,7 @@
     font-size: 30px;
   }
   .catalog-summary span {
-    font-size: 8px;
+    font-size: 14px;
   }
   .catalog-management {
     padding: 17px;
@@ -440,7 +440,7 @@
   }
   .catalog-management .btn {
     flex: 1;
-    font-size: 9px;
+    font-size: 14px;
     white-space: normal;
   }
   .catalog-browser {
@@ -457,33 +457,33 @@
     gap: 22px 13px;
   }
   .catalog-card-info h3 {
-    font-size: 11px;
+    font-size: 14px;
   }
   .catalog-card-actions .btn {
-    font-size: 10px;
+    font-size: 14px;
     min-height: 38px;
   }
   .catalog-search-footer {
     align-items: flex-start;
   }
   .checkbox-label {
-    font-size: 10px;
+    font-size: 14px;
   }
   .catalog-search-footer .text-button {
-    font-size: 9px;
+    font-size: 14px;
     text-align: right;
   }
   .catalog-picker-heading {
     flex-wrap: wrap;
   }
   .catalog-picker-heading strong {
-    font-size: 11px;
+    font-size: 14px;
   }
   .catalog-pagination {
     gap: 9px;
   }
   .catalog-pagination .btn {
-    font-size: 9px;
+    font-size: 14px;
     padding: 7px;
   }
   .selected-card-image {
@@ -509,5 +509,118 @@
   .catalog-browser,
   .catalog-management {
     display: none !important;
+  }
+}
+
+/* Readable multi-ink controls. Text never falls below 14px. */
+.catalog-filters {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.catalog-ink-filters {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0 0 8px;
+  padding: 14px;
+  border: 1px solid #435675;
+}
+.catalog-ink-filters legend {
+  font-size: 14px;
+  color: #c7d4e8;
+  padding: 0 7px;
+}
+.catalog-ink-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.catalog-ink-buttons .ink-option {
+  font-size: 14px;
+  min-height: 44px;
+  padding: 8px 10px;
+}
+.catalog-ink-filters .field-help {
+  font-size: 14px;
+  margin: 12px 0 0;
+}
+.catalog-card-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.catalog-card-info h3 {
+  font-size: 14px;
+}
+.catalog-card-actions .btn {
+  font-size: 14px;
+  min-height: 42px;
+}
+.catalog-search-footer {
+  flex-wrap: wrap;
+}
+.catalog-pagination {
+  flex-wrap: wrap;
+}
+#save-status {
+  font-size: 14px;
+}
+@media (max-width: 1150px) {
+  .header-note {
+    display: none;
+  }
+  .catalog-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 850px) {
+  .catalog-filters,
+  .editor-panel .catalog-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .editor-panel .catalog-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .ink-lenses {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 18px;
+  }
+  .catalog-card-grid,
+  .editor-panel .catalog-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .catalog-heading {
+    flex-wrap: wrap;
+  }
+  .catalog-summary {
+    padding-top: 0;
+    text-align: left;
+  }
+  .workspace-top .actions {
+    flex-wrap: wrap;
+  }
+  .catalog-picker-heading {
+    flex-wrap: wrap;
+  }
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+  .brand small {
+    letter-spacing: 1px;
+  }
+  .hero-link {
+    font-size: 14px;
+  }
+  .deck-card-section .section-heading {
+    flex-wrap: wrap;
+  }
+  .catalog-ink-filters {
+    padding: 12px;
+  }
+  .catalog-ink-buttons .ink-option {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+  .toolbar .filters {
+    flex-wrap: wrap;
   }
 }

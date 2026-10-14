@@ -74,6 +74,11 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   click('[data-ink="ruby"]');
   click('[data-ink="amethyst"]');
   click('[data-tab="cards"]');
+  assert.equal($('#card-deck-only').checked, true);
+  assert.equal($$('[data-catalog-ink].selected').length, 2);
+  click('[data-catalog-ink="emerald"]');
+  assert.equal($('#card-deck-only').checked, false);
+  assert.equal($$('[data-catalog-ink].selected').length, 3);
   input('#card-search', 'merlin');
   const id = $('[data-select-card]').dataset.selectCard;
   click('[data-select-card]');

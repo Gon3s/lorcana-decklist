@@ -71,7 +71,7 @@ export function sheet(d) {
               ${d.lines
                 .map(
                   (r, i) =>
-                    /* HTML */ `<strong style="font-size:12px"
+                    /* HTML */ `<strong style="font-size:14px"
                         >${i + 1}. ${esc(r.name || 'Séquence')}</strong
                       >
                       <p>${esc(r.note)}</p>`,
@@ -86,7 +86,7 @@ export function sheet(d) {
               <p>${esc(d.mulligan)}</p>
               ${
                 d.mulliganMatchup
-                  ? /* HTML */ `<strong style="font-size:12px">Selon l’adversaire</strong>
+                  ? /* HTML */ `<strong style="font-size:14px">Selon l’adversaire</strong>
                       <p>${esc(d.mulliganMatchup)}</p>`
                   : ''
               }

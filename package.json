@@ -1,0 +1,24 @@
+{
+  "name": "grimoire-lorcana",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/*.test.js",
+    "catalog:update": "node scripts/update-catalog.mjs",
+    "serve": "python3 -m http.server 8080 --directory docs",
+    "format": "prettier --write docs tests scripts README.md package.json",
+    "format:check": "prettier --check docs tests scripts README.md package.json",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "fake-indexeddb": "6.2.5",
+    "happy-dom": "21.0.1",
+    "prettier": "3.9.10"
+  }
+}

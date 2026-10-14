@@ -1,45 +1,693 @@
-const $=s=>document.querySelector(s), app=$('#app');
-const INKS={amber:['Ambre','#d7a849'],amethyst:['Améthyste','#9869c4'],emerald:['Émeraude','#419e79'],ruby:['Rubis','#c54e61'],sapphire:['Saphir','#4389be'],steel:['Acier','#9ca9b8']};
-const tabs=[['identity','Identité'],['cards','Cartes'],['matchups','Matchups'],['strategy','Plan de jeu']];
-const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const safeURL=u=>typeof u==='string'&&(/^(https?:\/\/)/.test(u)||/^data:image\/(png|jpeg|webp|gif);base64,/.test(u))?u:'';
-const uid=()=>crypto.randomUUID();const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-let decks=[],catalog=[],current=null,mode='library',tab='identity',query='',inkFilter='',typeFilter='',pendingDelete=null,saveTimer;
-const blank=()=>({id:uid(),name:'',inks:[],description:'',archetype:'Midrange',format:'',author:'',version:'1.0',image:'',source:'',keys:[],core:[],tech:[],favorable:[],unfavorable:[],lines:[],mulligan:'',mulliganMatchup:'',updated:new Date().toISOString(),example:false});
-const sample=blank();Object.assign(sample,{id:'example-ruby-amethyst',name:'Rubis Améthyste · Contrôle',inks:['ruby','amethyst'],description:'Gagner du temps, reprendre le plateau et transformer chaque échange en avantage. Une fiche exemple à adapter à votre liste.',archetype:'Contrôle',format:'Exemple pédagogique',author:'Grimoire',example:true,keys:[{name:'Madame Mime — En renard',id:'b632a76e8971d47d81626acf0505fdf0b9a173ba',qty:4,note:'Un outil de tempo : remonter un personnage pour rejouer un effet utile.',image:'https://api.lorcana.ravensburger.com/images/fr/set2/46_876586e7dbbad24d7577dba0316c97b0fdf8fc81.jpg'},{name:'Merlin — En chèvre',id:'a29eca3d8c2f7e753604eac2019e1eb7a21a01b2',qty:4,note:'Une source de lore à intégrer à vos séquences de rebond.',image:'https://api.lorcana.ravensburger.com/images/fr/set2/51_6bfccc48aa7af9e4eb41fc2d9b67760ed018b458.jpg'}],core:[{name:'Moteur de rebond',qty:1,note:'Décrivez ici les cartes et les quantités indispensables à votre version.',image:''}],favorable:[{inks:['amber','amethyst'],name:'Pression rapide — exemple',note:'À tester : stabiliser le plateau et préserver vos ressources. Cette indication illustre le format, pas une évaluation de la méta.'}],unfavorable:[{inks:['sapphire','steel'],name:'Rampe — exemple',note:'À tester : identifier les menaces prioritaires et éviter de laisser trop de temps à l’adversaire.'}],lines:[{name:'Début de partie',note:'Développer son encre et contester le plateau. Choisir ses échanges en fonction de la main adverse.'},{name:'Milieu de partie',note:'Réutiliser les effets d’arrivée en jeu pour créer de l’avantage et préparer une fenêtre de quête.'}],mulligan:'Chercher une courbe jouable dès les premiers tours, des cartes encrables et une interaction adaptée. Renvoyer les cartes trop coûteuses sans plan pour les jouer.',mulliganMatchup:'Face à une pression rapide, privilégier les réponses immédiates. Adapter ces principes à la liste exacte.',tech:[{name:'Une réponse à votre environnement',qty:1,note:'Indiquer le matchup visé et la carte que vous retireriez pour faire de la place.',image:''}]});
-try{const raw=localStorage.getItem('grimoire-v1');decks=raw?JSON.parse(raw):[sample];if(!Array.isArray(decks))decks=[sample]}catch{decks=[sample];toast('La sauvegarde locale n’a pas pu être chargée.')}
-function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3600)}
-function persist(){try{localStorage.setItem('grimoire-v1',JSON.stringify(decks));return true}catch{toast('Stockage plein ou indisponible. Exportez votre fiche pour la conserver.');return false}}
-function save(){if(!current)return;current.updated=new Date().toISOString();const i=decks.findIndex(d=>d.id===current.id);if(i<0)decks.unshift(current);else decks[i]=current;const ok=persist();const status=$('#save-status');if(status)status.textContent=ok?'● Enregistré sur cet appareil':'⚠ Exportez pour sauvegarder';}
-function inkIcon(ink){return INKS[ink]?`<img class="ink-icon" src="assets/inks/${ink}.png" alt="" aria-hidden="true" width="24" height="24">`:''}
-function inksHTML(inks){return inks.filter(i=>INKS[i]).map(i=>`<span class="ink-dot">${inkIcon(i)}${INKS[i][0]}</span>`).join('')}
-function colors(d){return `--c1:${INKS[d.inks[0]]?.[1]||'#615375'}77;--c2:${INKS[d.inks[1]]?.[1]||'#353242'}55`}
-function library(){mode='library';current=null;$('#nav-library').classList.add('active');app.innerHTML=`<section class="hero"><div class="hero-copy"><div class="eyebrow"><span class="tiny-cross">✦</span> LE GRIMOIRE DES ILLUMINEURS</div><h1>Une idée.<br>Six encres.<br><em>Votre légende.</em></h1><p>Rassemblez vos cartes. Révélez leurs synergies.<br>Créez le guide qui fera vivre votre prochain deck.</p><div class="hero-actions"><button class="btn primary" data-action="new">Créer ma fiche <span>✦</span></button><a class="hero-link" href="#collection">Explorer mes decks ↓</a></div><span class="hero-caption">CARTES CLÉS · MATCHUPS · MULLIGAN · LIGNES DE JEU</span></div><div class="hero-art" aria-label="Glimmers de Lorcana : Elsa, Mickey et Stitch"><div class="magic-orbit orbit-outer"></div><div class="magic-orbit orbit-inner"></div><span class="orbit-glyph glyph-top">✦</span><span class="orbit-glyph glyph-left">✧</span><span class="orbit-glyph glyph-right">✦</span><div class="art-cards"><img class="art-card card-one" src="https://api.lorcana.ravensburger.com/images/fr/set5/48_9ae1df04043e47571bfedeb4f3edeefacbf40e15.jpg" alt="Elsa — Le cinquième esprit"><img class="art-card card-two" src="https://api.lorcana.ravensburger.com/images/fr/set4/187_46a9b3a722ce799f8e5e39216049ab70420dbdbe.jpg" alt="Mickey Mouse — Sorcier espiègle"><img class="art-card card-three" src="https://api.lorcana.ravensburger.com/images/fr/set3/89_167b46d6d5fb24ab6f368c08de8d968becf11f0c.jpg" alt="Stitch — Agent sous couverture"></div><div class="magic-seal"><span>✧</span> L’IMAGINATION PREND VIE</div></div></section><section class="ink-compass" aria-label="Explorer par encre"><div class="ink-compass-heading"><span>CHOISISSEZ VOTRE ENCRE</span><small>Six façons d’écrire votre histoire.</small></div><div class="ink-lenses">${Object.entries(INKS).map(([k,v])=>`<button class="ink-lens ${inkFilter===k?'selected':''}" style="--ink:${v[1]}" data-filter-ink="${k}" aria-pressed="${inkFilter===k}"><span class="ink-jewel">${inkIcon(k)}</span><span>${v[0]}</span></button>`).join('')}</div></section><section class="intro-strip" id="collection"><span class="collection-number">✧</span><div><div class="collection-eyebrow">VOTRE COLLECTION DE STRATÉGIES</div><h2>Ouvrez un nouveau <em>chapitre.</em></h2><p>Chaque deck cache une histoire. À vous de l’écrire.</p></div><span class="mini">✦ UN UNIVERS DE POSSIBILITÉS</span></section><div class="toolbar"><div class="filters"><div class="search"><span>⌕</span><input id="search" aria-label="Rechercher une fiche" placeholder="Rechercher un deck…" value="${esc(query)}"></div><select id="ink-filter" aria-label="Filtrer par encre"><option value="">Toutes les encres</option>${Object.entries(INKS).map(([k,v])=>`<option value="${k}" ${inkFilter===k?'selected':''}>${v[0]}</option>`).join('')}</select><select id="type-filter" aria-label="Filtrer par archétype"><option value="">Tous les styles</option>${['Aggro','Midrange','Contrôle','Combo','Tempo','Autre'].map(x=>`<option ${typeFilter===x?'selected':''}>${x}</option>`).join('')}</select></div><span class="count" id="count"></span></div><div class="deck-grid" id="grid"></div><p class="bottom-tip">✦ Vos fiches restent dans ce navigateur. Exportez-les pour les conserver ou les partager.</p>`;renderGrid();$('#search').oninput=e=>{query=e.target.value;renderGrid()};$('#ink-filter').onchange=e=>{inkFilter=e.target.value;document.querySelectorAll('.ink-lens').forEach(b=>{const chosen=b.dataset.filterInk===inkFilter;b.classList.toggle('selected',chosen);b.setAttribute('aria-pressed',String(chosen))});renderGrid()};$('#type-filter').onchange=e=>{typeFilter=e.target.value;renderGrid()};}
-function renderGrid(){const ds=decks.filter(d=>normalize(d.name+' '+d.description).includes(normalize(query))&&(!inkFilter||d.inks.includes(inkFilter))&&(!typeFilter||d.archetype===typeFilter));$('#count').textContent=`${ds.length} fiche${ds.length!==1?'s':''}`;$('#grid').innerHTML=ds.map((d,index)=>`<article class="deck-card"><div class="deck-issue"><span>GRIMOIRE / ${String(index+1).padStart(2,'0')}</span><span>${d.example?'ÉTUDE DE CAS':'NOTES PERSONNELLES'}</span></div><div class="deck-cover" style="${colors(d)}" data-action="read" data-id="${esc(d.id)}" role="button" tabindex="0" aria-label="Ouvrir ${esc(d.name)}">${safeURL(d.image)?`<img src="${esc(safeURL(d.image))}" alt="Decklist" loading="lazy">`:d.keys.some(c=>safeURL(c.image))?'<div class="cover-cards">'+d.keys.filter(c=>safeURL(c.image)).slice(0,3).map(c=>'<img src="'+esc(safeURL(c.image))+'" alt="" loading="lazy">').join('')+'</div>':'<span class="cover-glyph">✦</span>'}<div class="cover-label">${inksHTML(d.inks)}</div></div><div class="deck-body"><div class="deck-meta"><span class="tag">${esc(d.archetype)}</span>${d.example?'<span class="tag example">Exemple</span>':'<span class="tag">Personnel</span>'}</div><h3 data-action="read" data-id="${esc(d.id)}">${esc(d.name||'Sans titre')}</h3><p>${esc(d.description||'Votre stratégie reste à écrire.')}</p><div class="deck-bottom"><span>${d.keys.length} cartes clés · ${new Date(d.updated).toLocaleDateString('fr-FR')}</span><button data-action="edit" data-id="${esc(d.id)}">Éditer la fiche ↗</button></div></div></article>`).join('')+`<button class="new-card" data-action="new"><span class="new-kicker">VOTRE PROCHAINE AVENTURE</span><b>＋</b><strong>Un nouveau<br><em>chapitre.</em></strong><span>Créer une fiche de deck ↗</span></button>`}
-function openEditor(d){current=d;mode='edit';tab='identity';query='';$('#nav-library').classList.remove('active');renderEditor()}
-function editorTop(){return `<div class="workspace-top"><button class="back" data-action="home">← Mes fiches</button><div class="actions"><span id="save-status" class="muted" style="font-size:10px">● Enregistré sur cet appareil</span><button class="btn small" data-action="read-current">Aperçu</button><button class="btn small" data-action="export">Exporter</button></div></div>`}
-function renderEditor(){app.innerHTML=editorTop()+`<h1 class="workspace-title">${current.name?'Éditer votre fiche':'Une nouvelle stratégie.'}</h1><div class="editor-layout"><section class="editor-panel"><div class="tabs">${tabs.map(([k,n])=>`<button class="tab ${tab===k?'active':''}" data-tab="${k}">${n}</button>`).join('')}</div><div class="form-body" id="form"></div></section><aside class="preview-panel"><div class="preview-label"><span>APERÇU EN DIRECT</span><span>✦ VOTRE GRIMOIRE</span></div><div id="preview"></div></aside></div>`;renderForm();preview()}
-function field(label,key,placeholder='',area=false){return `<div class="field"><label for="f-${key}">${label}</label><${area?'textarea':'input'} id="f-${key}" data-field="${key}" placeholder="${esc(placeholder)}" ${area?'':'value="'+esc(current[key])+'"'}>${area?esc(current[key]):''}${area?'</textarea>':''}</div>`}
-function inkOptions(selected,data='deck'){return `<div class="ink-options">${Object.entries(INKS).map(([k,v])=>`<button type="button" class="ink-option ${selected.includes(k)?'selected':''}" style="--ink:${v[1]}" data-ink="${k}" data-ink-target="${data}" aria-pressed="${selected.includes(k)}">${inkIcon(k)}${v[0]}</button>`).join('')}</div>`}
-function renderForm(){const f=$('#form');if(tab==='identity')f.innerHTML=field('Nom du deck *','name','Ex. Saphir Acier · Ramp')+`<div class="field"><label>Encres du deck * <small>— 1 ou 2 maximum</small></label>${inkOptions(current.inks)}</div>`+field('En quelques mots','description','Quel est le plan de votre deck ?',true)+`<div class="two-cols"><div class="field"><label for="archetype">Archétype</label><select id="archetype" data-field="archetype">${['Aggro','Midrange','Contrôle','Combo','Tempo','Autre'].map(t=>`<option ${current.archetype===t?'selected':''}>${t}</option>`).join('')}</select></div>${field('Format / extension','format','Ex. Construit · extension…')}</div><div class="field"><label>Image de la decklist</label><div class="dropzone" id="drop" tabindex="0" role="button" aria-label="Ajouter une image de decklist">${safeURL(current.image)?`<img src="${esc(safeURL(current.image))}" alt="Decklist importée">`:'<span style="font-size:28px;color:var(--accent)">⇧</span>'}<strong>${current.image?'Remplacer la decklist':'Déposez votre image ici'}</strong><p>Cliquez pour choisir, ou collez avec Ctrl / ⌘ + V<br>PNG, JPG, WebP · 10 Mo maximum</p></div><input id="image-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>${current.image?'<button class="btn small ghost" style="margin-top:8px" data-action="remove-image">Retirer l’image</button>':''}</div>`+field('Lien vers la decklist d’origine','source','https://…')+`<div class="two-cols">${field('Auteur','author','Votre pseudo')}${field('Version','version','1.0')}</div><p class="source-note">Un brouillon peut rester incomplet. Ajoutez un nom, une ou deux encres et une image avant de finaliser votre fiche.</p>`;
-if(tab==='cards')f.innerHTML=`<div class="section-heading"><h3>Vos cartes, leurs rôles.</h3></div><p class="field-help">Cartes clés : synergies et conditions de victoire. Core : base indispensable. Techs : options et remplacements.</p><div class="field"><label for="card-search">Rechercher dans le catalogue français</label><input id="card-search" placeholder="Nom d’une carte…" autocomplete="off"><p class="field-help" id="catalog-status">${catalog.length?catalog.length+' cartes disponibles · catalogue du 14/10/2026':'Chargement du catalogue…'}</p><div id="card-results" class="card-search-results"></div></div>${['keys','core','tech'].map(k=>cardSection(k)).join('')}<p class="source-note">Données et illustrations : catalogue officiel Ravensburger. Les visuels nécessitent une connexion. Le nombre d’entrées par rubrique n’est pas limité.</p>`;
-if(tab==='matchups')f.innerHTML=`<h3>Anticipez l’adversaire.</h3><p class="field-help">Renseignez les encres et, si utile, l’archétype. Les appréciations reflètent vos observations.</p>${['favorable','unfavorable'].map(k=>`<div class="section-heading" style="margin-top:25px"><h3>${k==='favorable'?'↗ Favorables':'↘ Défavorables'}</h3><button class="btn small" data-add="${k}">＋ Ajouter</button></div>${current[k].map((r,i)=>`<div class="repeat-row"><div class="row-head"><span class="muted">Matchup ${i+1}</span>${rowTools(k,i)}</div>${inkOptions(r.inks,k+':'+i)}<input style="margin-top:12px" aria-label="Archétype adverse" data-list="${k}" data-index="${i}" data-prop="name" value="${esc(r.name)}" placeholder="Archétype adverse (facultatif)"><textarea aria-label="Conseils de matchup" data-list="${k}" data-index="${i}" data-prop="note" placeholder="Pourquoi ? Quel plan adopter ?">${esc(r.note)}</textarea></div>`).join('')||'<div class="empty-block">Ajoutez votre premier matchup.</div>'}`).join('')}`;
-if(tab==='strategy')f.innerHTML=`<div class="section-heading"><h3>Lignes de jeu</h3><button class="btn small" data-add="lines">＋ Ajouter</button></div><p class="field-help">Décrivez la situation, la séquence et l’objectif. Réordonnez les lignes avec les flèches.</p>${current.lines.map((r,i)=>`<div class="repeat-row"><div class="row-head"><span class="muted">Séquence ${i+1}</span>${rowTools('lines',i)}</div><input aria-label="Titre de la séquence" data-list="lines" data-index="${i}" data-prop="name" value="${esc(r.name)}" placeholder="Ex. Début de partie"><textarea aria-label="Détails de la séquence" data-list="lines" data-index="${i}" data-prop="note" placeholder="Situation → Séquence → Objectif">${esc(r.note)}</textarea></div>`).join('')}<div style="margin-top:28px">${field('Mulligan · garder / renvoyer','mulligan','Quelles cartes chercher dans la main de départ ? Que renvoyer ?',true)}${field('Adapter le mulligan à l’adversaire','mulliganMatchup','Sur le play / sur la draw, face à aggro, contrôle…',true)}</div>`;
-if($('#drop')){$('#drop').onclick=()=>$('#image-file').click();$('#drop').onkeydown=e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();$('#image-file').click()}};$('#image-file').onchange=e=>loadImage(e.target.files[0]);$('#drop').ondragover=e=>{e.preventDefault();$('#drop').classList.add('dragover')};$('#drop').ondragleave=()=>$('#drop').classList.remove('dragover');$('#drop').ondrop=e=>{e.preventDefault();loadImage(e.dataTransfer.files[0])}}
-if($('#card-search'))$('#card-search').oninput=e=>searchCards(e.target.value);
+import { CARD_SECTIONS, INKS } from './js/core/constants.js';
+import {
+  createDeck,
+  decodeDeckExport,
+  encodeDeckExport,
+  addCatalogCard,
+  moveRow,
+  toggleInk,
+} from './js/core/decks.js';
+import { createSampleDeck } from './js/core/sample.js';
+import { createCardIndex, effectiveCards, searchCatalog } from './js/core/catalog.js';
+import { normalize, quantity, uid } from './js/core/utils.js';
+import { loadDecks, saveDecks } from './js/services/deck-store.js';
+import { CatalogRepository } from './js/services/catalog-store.js';
+import { downloadText, readJSONFile, readDeckImage } from './js/services/files.js';
+import { esc } from './js/ui/html.js';
+import { collectionPage, deckGrid } from './js/ui/collection.js';
+import { sheet } from './js/ui/sheet.js';
+import {
+  editorPage,
+  identityForm,
+  matchupsForm,
+  strategyForm,
+  cardsForm,
+  cardSections,
+} from './js/ui/editor.js';
+import {
+  catalogPage,
+  catalogBrowser,
+  catalogResults,
+  catalogPagination,
+  catalogCardForm,
+  cardDetail,
+} from './js/ui/catalog.js';
+
+const $ = (selector) => document.querySelector(selector);
+const app = $('#app');
+const repository = new CatalogRepository();
+const defaultFilters = () => ({
+  query: '',
+  ink: '',
+  type: '',
+  set: '',
+  cost: '',
+  sort: 'name',
+  page: 1,
+  deckOnly: false,
+});
+const state = {
+  decks: [],
+  current: null,
+  mode: 'library',
+  tab: 'identity',
+  query: '',
+  inkFilter: '',
+  typeFilter: '',
+  catalog: null,
+  cards: [],
+  index: [],
+  filters: defaultFilters(),
+  target: 'keys',
+  catalogBusy: false,
+  catalogWarning: '',
+};
+let toastTimer;
+
+function toast(message) {
+  $('#toast').textContent = message;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 4200);
 }
-function rowTools(k,i){return `<div class="row-tools"><button class="iconbtn" data-move="${k}:${i}:-1" aria-label="Monter" ${i===0?'disabled':''}>↑</button><button class="iconbtn" data-move="${k}:${i}:1" aria-label="Descendre" ${i===current[k].length-1?'disabled':''}>↓</button><button class="iconbtn" data-remove="${k}:${i}" aria-label="Retirer">×</button></div>`}
-function cardSection(k){const names={keys:'Cartes clés',core:'Core du deck',tech:'Techs & cartes potentielles'};return `<div class="section-heading" style="margin-top:25px"><h3>${names[k]}</h3><button class="btn small" data-add="${k}">＋ Saisie libre</button></div>${current[k].map((c,i)=>`<div class="repeat-row"><div class="row-head"><span class="muted">${c.id?'Catalogue':'Carte libre'} ${i+1}</span>${rowTools(k,i)}</div><div class="row-fields"><input type="number" min="1" max="99" aria-label="Quantité" data-list="${k}" data-index="${i}" data-prop="qty" value="${esc(c.qty)}"><input aria-label="Nom de carte" data-list="${k}" data-index="${i}" data-prop="name" value="${esc(c.name)}" placeholder="Nom de la carte"></div><textarea aria-label="Rôle de la carte" data-list="${k}" data-index="${i}" data-prop="note" placeholder="${k==='tech'?'Quel problème résout-elle ? Quelle carte remplacer ?':'Rôle, synergie, importance…'}">${esc(c.note)}</textarea></div>`).join('')||'<div class="empty-block">Recherchez une carte ou ajoutez une entrée libre.</div>'}`}
-function searchCards(q){const target=$('#card-results');if(q.trim().length<2){target.innerHTML='';return}const found=catalog.filter(c=>normalize(c.name).includes(normalize(q))).slice(0,24);target.innerHTML=found.map(c=>`<div class="result-card">${safeURL(c.image)?`<img src="${esc(c.image)}" alt="" loading="lazy">`:''}<div style="flex:1">${esc(c.name)}<small>Coût ${c.cost} · ${esc(c.set.join(', '))}</small><div class="actions" style="margin-top:8px">${[['keys','Clé'],['core','Core'],['tech','Tech']].map(([k,n])=>`<button class="btn small" data-card="${esc(c.id)}" data-section="${k}">＋ ${n}</button>`).join('')}</div></div></div>`).join('')||'<p class="field-help">Aucune carte trouvée. Vous pouvez utiliser la saisie libre.</p>'}
-function sheet(d){const cards=(k,title)=>d[k].length?`<section class="sheet-section"><h3>${title}</h3>${d[k].map(c=>`<div class="sheet-card">${safeURL(c.image)?`<img src="${esc(safeURL(c.image))}" alt="${esc(c.name)}" loading="lazy">`:''}<div><strong><span class="sheet-pill">${esc(c.qty)}×</span>${esc(c.name||'Carte à préciser')}</strong>${c.note?`<p>${esc(c.note)}</p>`:''}</div></div>`).join('')}</section>`:'';return `<article class="sheet" style="${colors(d)}"><div class="sheet-head"><div class="sheet-running"><span>GRIMOIRE / LORCANA</span><span>NOTES DE JEU</span></div><div class="eyebrow">GUIDE DE DECK ${d.example?'· EXEMPLE':''}</div><div>${inksHTML(d.inks)}</div><h2>${esc(d.name||'Le nom de votre deck')}</h2><p>${esc(d.description||'Votre plan de jeu en quelques mots…')}</p><div class="deck-meta" style="margin:16px 0 0"><span class="tag">${esc(d.archetype)}</span>${d.format?`<span class="tag">${esc(d.format)}</span>`:''}</div></div><div class="sheet-body">${safeURL(d.image)?`<section class="sheet-section"><h3>La decklist</h3><img class="decklist" src="${esc(safeURL(d.image))}" alt="Decklist ${esc(d.name)}" data-action="zoom"></section>`:'<section class="sheet-section"><h3>La decklist</h3><div class="empty-block">Votre image de decklist apparaîtra ici.</div></section>'}${cards('keys','Cartes clés')}${cards('core','Core du deck')}${['favorable','unfavorable'].map(k=>d[k].length?`<section class="sheet-section"><h3>${k==='favorable'?'Matchups favorables':'Matchups défavorables'}</h3>${d[k].map(r=>`<div class="sheet-match ${k==='unfavorable'?'bad':''}"><div>${inksHTML(r.inks)}</div><strong style="display:block;margin-top:8px">${esc(r.name)}</strong><p>${esc(r.note)}</p></div>`).join('')}</section>`:'').join('')}${d.lines.length?`<section class="sheet-section"><h3>Lignes de jeu</h3>${d.lines.map((r,i)=>`<strong style="font-size:12px">${i+1}. ${esc(r.name||'Séquence')}</strong><p>${esc(r.note)}</p>`).join('')}</section>`:''}${d.mulligan||d.mulliganMatchup?`<section class="sheet-section"><h3>Mulligan</h3><p>${esc(d.mulligan)}</p>${d.mulliganMatchup?`<strong style="font-size:12px">Selon l’adversaire</strong><p>${esc(d.mulliganMatchup)}</p>`:''}</section>`:''}${cards('tech','Techs & pistes')}${safeURL(d.source)&&/^https?:/.test(d.source)?`<a class="btn small" href="${esc(d.source)}" target="_blank" rel="noopener noreferrer">Decklist d’origine ↗</a>`:''}</div><div class="sheet-footer"><span>✦ GRIMOIRE${d.author?' · '+esc(d.author):''}</span><span>v${esc(d.version)} · ${new Date(d.updated).toLocaleDateString('fr-FR')}</span></div></article>`}
-function preview(){if($('#preview'))$('#preview').innerHTML=sheet(current)}
-function read(d){current=d;mode='read';$('#nav-library').classList.remove('active');app.innerHTML=`<div class="workspace-top"><button class="back" data-action="home">← Mes fiches</button><div class="actions"><button class="btn small" data-action="duplicate">Dupliquer</button><button class="btn small" data-action="export">Exporter JSON</button><button class="btn small" data-action="print">Imprimer / PDF</button><button class="btn small" data-action="delete">Supprimer</button><button class="btn primary small" data-action="edit-current">Modifier</button></div></div><div class="read-layout">${sheet(d)}</div>`;window.scrollTo(0,0)}
-async function loadImage(file){if(!file)return;if(!['image/png','image/jpeg','image/webp'].includes(file.type))return toast('Choisissez une image PNG, JPG ou WebP.');if(file.size>10*1024*1024)return toast('L’image dépasse 10 Mo.');try{const bitmap=await createImageBitmap(file);const scale=Math.min(1,2000/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=bitmap.width*scale;canvas.height=bitmap.height*scale;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();current.image=canvas.toDataURL('image/jpeg',.88);save();renderForm();preview();toast('Decklist ajoutée.')}catch{toast('Impossible de lire cette image.')}}
-function download(){const b=new Blob([JSON.stringify({schemaVersion:1,deck:current},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=(normalize(current.name||'fiche-lorcana').replace(/[^a-z0-9]+/g,'-'))+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);toast('Fiche exportée, image comprise.')}
-function importDeck(value){const raw=JSON.parse(value);const v=raw.deck;if(raw.schemaVersion!==1||!v||typeof v.name!=='string'||!Array.isArray(v.inks)||v.inks.length>2||v.inks.some(i=>!INKS[i]))throw Error('Format de fiche invalide');const d=blank();for(const key of ['name','description','format','author','version','source','mulligan','mulliganMatchup'])if(typeof v[key]==='string')d[key]=v[key];d.inks=v.inks;d.image=safeURL(v.image);d.archetype=['Aggro','Midrange','Contrôle','Combo','Tempo','Autre'].includes(v.archetype)?v.archetype:'Autre';for(const k of ['keys','core','tech','lines','favorable','unfavorable']){if(!Array.isArray(v[k]))throw Error('Rubrique manquante : '+k);d[k]=v[k].map(r=>({name:String(r.name??''),note:String(r.note??''),qty:Math.max(1,Math.min(99,Number(r.qty)||1)),image:safeURL(r.image),id:typeof r.id==='string'?r.id:undefined,inks:Array.isArray(r.inks)?r.inks.filter(i=>INKS[i]).slice(0,2):[]}))}decks.unshift(d);persist();read(d);toast('Fiche importée sur cet appareil.')}
-app.addEventListener('input',e=>{if(mode!=='edit')return;const t=e.target;if(t.dataset.field){current[t.dataset.field]=t.value;save();preview()}if(t.dataset.list){const {list,index,prop}=t.dataset;current[list][index][prop]=prop==='qty'?Math.max(1,Math.min(99,Number(t.value)||1)):t.value;save();preview()}});
-app.addEventListener('change',e=>{if(mode==='edit'&&e.target.dataset.field){current[e.target.dataset.field]=e.target.value;save();preview()}});
-app.addEventListener('click',e=>{const t=e.target.closest('button,[data-action]');if(!t)return;if(t.dataset.filterInk){inkFilter=inkFilter===t.dataset.filterInk?'':t.dataset.filterInk;$('#ink-filter').value=inkFilter;document.querySelectorAll('.ink-lens').forEach(b=>{const chosen=b.dataset.filterInk===inkFilter;b.classList.toggle('selected',chosen);b.setAttribute('aria-pressed',String(chosen))});renderGrid();return}if(t.dataset.tab){tab=t.dataset.tab;renderEditor();return}if(t.dataset.ink){const target=t.dataset.inkTarget==='deck'?current.inks:current[t.dataset.inkTarget.split(':')[0]][Number(t.dataset.inkTarget.split(':')[1])].inks;const i=target.indexOf(t.dataset.ink);if(i>=0)target.splice(i,1);else if(target.length<2)target.push(t.dataset.ink);else return toast('Deux encres maximum. Retirez-en une pour changer.');save();renderForm();preview();return}if(t.dataset.add){const k=t.dataset.add;current[k].push(['favorable','unfavorable'].includes(k)?{name:'',note:'',inks:[]}:['lines'].includes(k)?{name:'',note:''}:{name:'',qty:1,note:'',image:''});save();renderForm();preview();return}if(t.dataset.remove){const [k,i]=t.dataset.remove.split(':');current[k].splice(Number(i),1);save();renderForm();preview();return}if(t.dataset.move){const [k,idx,dir]=t.dataset.move.split(':');const i=Number(idx),j=i+Number(dir);if(j<0||j>=current[k].length)return;[current[k][i],current[k][j]]=[current[k][j],current[k][i]];save();renderForm();preview();return}if(t.dataset.card){const c=catalog.find(c=>c.id===t.dataset.card);if(c){const q=$('#card-search').value;current[t.dataset.section].push({...c,qty:1,note:''});save();renderForm();$('#card-search').value=q;searchCards(q);preview();toast('Carte ajoutée.')}return}const action=t.dataset.action;const d=decks.find(d=>d.id===t.dataset.id);if(action==='new'){const d=blank();decks.unshift(d);current=d;save();openEditor(d)}if(action==='home'){if(mode==='edit')save();library()}if(action==='read')read(d);if(action==='edit')openEditor(d);if(action==='read-current'){save();read(current)}if(action==='edit-current')openEditor(current);if(action==='remove-image'){current.image='';save();renderForm();preview()}if(action==='export')download();if(action==='print'){if(document.fonts?.ready)document.fonts.ready.then(()=>window.print());else window.print()}if(action==='duplicate'){const d=structuredClone(current);d.id=uid();d.name+=' (copie)';d.example=false;d.updated=new Date().toISOString();decks.unshift(d);persist();openEditor(d);toast('Copie créée.')}if(action==='delete'){pendingDelete=current.id;$('#confirm').showModal()}if(action==='zoom'){const dlg=document.createElement('dialog');dlg.className='image-dialog';dlg.innerHTML=`<button class="btn small">Fermer ×</button><img class="full-image" src="${esc(safeURL(current.image))}" alt="Decklist agrandie">`;document.body.append(dlg);dlg.querySelector('button').onclick=()=>dlg.close();dlg.onclose=()=>dlg.remove();dlg.showModal()}});
-app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[role="button"][data-action]'))e.target.click()});
-$('#nav-library').onclick=()=>{if(mode==='edit')save();library()};$('.brand').onclick=e=>{e.preventDefault();if(mode==='edit')save();library()};$('#import-top').onclick=()=>$('#import-file').click();$('#import-file').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>15*1024*1024){toast('Ce fichier dépasse 15 Mo.');return}try{importDeck(await file.text())}catch{toast('Fichier invalide : importez un export JSON Grimoire.')}e.target.value=''};$('#cancel-delete').onclick=()=>$('#confirm').close();$('#do-delete').onclick=()=>{decks=decks.filter(d=>d.id!==pendingDelete);persist();$('#confirm').close();library();toast('Fiche supprimée.')};document.addEventListener('paste',e=>{if(mode!=='edit'||tab!=='identity')return;const file=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'))?.getAsFile();if(file){e.preventDefault();loadImage(file)}});
-library();fetch('assets/catalog.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(data=>{catalog=data.cards;if($('#catalog-status'))$('#catalog-status').textContent=catalog.length+' cartes disponibles · catalogue du 14/10/2026'}).catch(()=>{if($('#catalog-status'))$('#catalog-status').textContent='Catalogue indisponible. La saisie libre reste accessible.'});
+function setNavigation() {
+  $('#nav-library').classList.toggle('active', state.mode !== 'catalog');
+  $('#nav-catalog').classList.toggle('active', state.mode === 'catalog');
+}
+function persist() {
+  try {
+    saveDecks(localStorage, state.decks);
+    return true;
+  } catch {
+    toast('Sauvegarde locale impossible. Exportez vos fiches pour les conserver.');
+    return false;
+  }
+}
+function save() {
+  if (!state.current) return;
+  state.current.updated = new Date().toISOString();
+  const index = state.decks.findIndex((deck) => deck.id === state.current.id);
+  if (index < 0) state.decks.unshift(state.current);
+  else state.decks[index] = state.current;
+  const saved = persist();
+  if ($('#save-status'))
+    $('#save-status').textContent = saved
+      ? '● Enregistré sur cet appareil'
+      : '⚠ Exportez pour sauvegarder';
+}
+function renderGrid() {
+  const result = deckGrid(state.decks, state);
+  $('#grid').innerHTML = result.markup;
+  $('#count').textContent = result.count + ' fiche' + (result.count === 1 ? '' : 's');
+}
+function library() {
+  state.mode = 'library';
+  state.current = null;
+  app.innerHTML = collectionPage(state);
+  setNavigation();
+  renderGrid();
+  $('#search').oninput = (event) => {
+    state.query = event.target.value;
+    renderGrid();
+  };
+  $('#ink-filter').onchange = (event) => {
+    state.inkFilter = event.target.value;
+    syncInkFilter();
+  };
+  $('#type-filter').onchange = (event) => {
+    state.typeFilter = event.target.value;
+    renderGrid();
+  };
+}
+function syncInkFilter() {
+  $('#ink-filter').value = state.inkFilter;
+  document.querySelectorAll('.ink-lens').forEach((button) => {
+    const selected = button.dataset.filterInk === state.inkFilter;
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  renderGrid();
+}
+function preview() {
+  if ($('#preview') && state.current) $('#preview').innerHTML = sheet(state.current);
+}
+function openEditor(deck) {
+  if (!deck) return;
+  state.current = deck;
+  state.mode = 'edit';
+  state.tab = 'identity';
+  state.filters = defaultFilters();
+  renderEditor();
+  window.scrollTo(0, 0);
+}
+function renderEditor() {
+  app.innerHTML = editorPage(state.current, state.tab);
+  setNavigation();
+  renderForm();
+  preview();
+}
+function browserMarkup() {
+  return catalogBrowser({
+    document: state.catalog,
+    filters: state.filters,
+    context: state.mode === 'edit' ? 'picker' : 'manage',
+    target: state.target,
+    deck: state.current,
+  });
+}
+function renderForm() {
+  const forms = {
+    identity: identityForm,
+    matchups: matchupsForm,
+    strategy: strategyForm,
+  };
+  $('#form').innerHTML =
+    state.tab === 'cards'
+      ? cardsForm(state.current, browserMarkup())
+      : forms[state.tab](state.current);
+  if (state.tab === 'cards') renderResults();
+  if ($('#drop')) {
+    const drop = $('#drop');
+    drop.onclick = () => $('#image-file').click();
+    drop.onkeydown = (event) => {
+      if (['Enter', ' '].includes(event.key)) {
+        event.preventDefault();
+        $('#image-file').click();
+      }
+    };
+    $('#image-file').onchange = (event) => loadImage(event.target.files[0]);
+    drop.ondragover = (event) => {
+      event.preventDefault();
+      drop.classList.add('dragover');
+    };
+    drop.ondragleave = () => drop.classList.remove('dragover');
+    drop.ondrop = (event) => {
+      event.preventDefault();
+      loadImage(event.dataTransfer.files[0]);
+    };
+  }
+}
+function read(deck) {
+  if (!deck) return;
+  state.current = deck;
+  state.mode = 'read';
+  setNavigation();
+  app.innerHTML = `<div class="workspace-top"><button class="back" data-action="home">← Mes fiches</button>
+    <div class="actions"><button class="btn small" data-action="duplicate">Dupliquer</button>
+      <button class="btn small" data-action="export">Exporter JSON</button>
+      <button class="btn small" data-action="print">Imprimer / PDF</button>
+      <button class="btn small" data-action="delete">Supprimer</button>
+      <button class="btn primary small" data-action="edit-current">Modifier</button></div></div>
+    <div class="read-layout">${sheet(deck)}</div>`;
+  window.scrollTo(0, 0);
+}
+async function loadImage(file) {
+  if (!file) return;
+  try {
+    const deck = state.current;
+    const image = await readDeckImage(file);
+    if (state.current !== deck || state.mode !== 'edit') return;
+    deck.image = image;
+    save();
+    renderForm();
+    preview();
+    toast('Decklist ajoutée.');
+  } catch (error) {
+    toast(error.message || 'Impossible de lire cette image.');
+  }
+}
+function renderCatalog() {
+  state.mode = 'catalog';
+  setNavigation();
+  app.innerHTML = catalogPage({
+    document: state.catalog,
+    count: state.cards.length,
+    warning: state.catalogWarning,
+    busy: state.catalogBusy,
+  });
+  renderBrowser();
+}
+function renderBrowser() {
+  const target =
+    state.mode === 'catalog'
+      ? $('#catalog-browser')
+      : state.mode === 'edit' && state.tab === 'cards'
+        ? $('.catalog-browser')
+        : null;
+  if (!target) return;
+  if (state.mode === 'catalog') target.innerHTML = browserMarkup();
+  else target.outerHTML = browserMarkup();
+  renderResults();
+}
+function renderResults() {
+  if (!$('#catalog-results')) return;
+  const result = searchCatalog(state.index, {
+    ...state.filters,
+    deckInks: state.current?.inks || [],
+  });
+  state.filters.page = result.page;
+  $('#catalog-result-count').textContent =
+    result.total.toLocaleString('fr-FR') +
+    ' carte' +
+    (result.total === 1 ? '' : 's') +
+    ' · ' +
+    (state.mode === 'edit' ? CARD_SECTIONS[state.target] : 'Catalogue');
+  $('#catalog-results').innerHTML = catalogResults(result, {
+    context: state.mode === 'edit' ? 'picker' : 'manage',
+    target: state.target,
+    deck: state.current,
+  });
+  $('#catalog-pagination').innerHTML = catalogPagination(result);
+}
+function syncCatalog(document) {
+  state.catalog = document;
+  state.cards = effectiveCards(document);
+  state.index = createCardIndex(state.cards);
+  state.catalogWarning = repository.warning;
+}
+async function loadCatalog() {
+  try {
+    syncCatalog(await repository.load());
+  } catch (error) {
+    state.catalogWarning = 'Catalogue indisponible : ' + error.message;
+  }
+  if (state.mode === 'catalog') renderCatalog();
+  else if (state.mode === 'edit' && state.tab === 'cards') renderForm();
+}
+async function catalogOperation(operation, success) {
+  if (state.catalogBusy) return;
+  state.catalogBusy = true;
+  if (state.mode === 'catalog') renderCatalog();
+  try {
+    syncCatalog(await operation());
+    toast(success);
+  } catch (error) {
+    state.catalogWarning =
+      'Aucune modification enregistrée. ' + (error.message || 'Opération impossible.');
+    toast(state.catalogWarning);
+  } finally {
+    state.catalogBusy = false;
+    if (state.mode === 'catalog') renderCatalog();
+    else if (state.mode === 'edit' && state.tab === 'cards') renderForm();
+  }
+}
+function openDialog(content, className = '') {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'app-dialog ' + className;
+  dialog.innerHTML = `<button type="button" class="btn small dialog-close" data-close-dialog aria-label="Fermer">Fermer ×</button>${content}`;
+  dialog.addEventListener('click', (event) => {
+    if (event.target.closest('[data-close-dialog]')) dialog.close();
+  });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  document.body.append(dialog);
+  dialog.showModal();
+  return dialog;
+}
+function confirmAction(title, message, button = 'Confirmer') {
+  return new Promise((resolve) => {
+    const dialog = openDialog(
+      `<h2>${esc(title)}</h2><p>${esc(message)}</p><div class="actions"><button class="btn" data-close-dialog>Annuler</button><button class="btn primary" id="confirm-action">${esc(button)}</button></div>`,
+    );
+    dialog.querySelector('#confirm-action').onclick = () => {
+      resolve(true);
+      dialog.close();
+    };
+    dialog.addEventListener('close', () => resolve(false), { once: true });
+  });
+}
+function editCatalogCard(card) {
+  const dialog = openDialog(catalogCardForm(card), 'catalog-edit-dialog');
+  const form = dialog.querySelector('form');
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const next = {
+      ...card,
+      id: card?.id || 'custom-' + uid(),
+      name: data.get('name'),
+      inks: data.getAll('inks'),
+      type: data.get('type'),
+      cost: Number(data.get('cost')),
+      image: data.get('image'),
+      set: data
+        .get('set')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+      rarity: data.get('rarity'),
+      text: data.get('text'),
+    };
+    const submit = form.querySelector('[type=submit]');
+    submit.disabled = true;
+    try {
+      syncCatalog(await repository.upsert(next));
+      dialog.close();
+      renderCatalog();
+      toast('Carte enregistrée dans votre catalogue.');
+    } catch (error) {
+      dialog.querySelector('#catalog-card-error').textContent = error.message;
+    } finally {
+      submit.disabled = false;
+    }
+  };
+}
+function selectedCardsChanged() {
+  save();
+  if ($('#selected-card-sections'))
+    $('#selected-card-sections').innerHTML = cardSections(state.current);
+  else renderForm();
+  renderResults();
+  preview();
+}
+
+function handleCardFilter(event) {
+  const key = event.target.dataset.cardFilter;
+  if (!key) return false;
+  state.filters[key] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+  state.filters.page = 1;
+  renderResults();
+  return true;
+}
+app.addEventListener('input', (event) => {
+  if (handleCardFilter(event)) return;
+  if (state.mode !== 'edit') return;
+  const { field, list, index, prop } = event.target.dataset;
+  if (field) {
+    state.current[field] = event.target.value;
+    save();
+    preview();
+  }
+  if (list) {
+    state.current[list][index][prop] =
+      prop === 'qty' ? quantity(event.target.value) : event.target.value;
+    save();
+    preview();
+  }
+});
+app.addEventListener('change', (event) => {
+  if (handleCardFilter(event)) return;
+  if (event.target.id === 'card-target') {
+    state.target = event.target.value;
+    renderResults();
+  }
+  if (state.mode === 'edit' && event.target.dataset.field) {
+    state.current[event.target.dataset.field] = event.target.value;
+    save();
+    preview();
+  }
+});
+app.addEventListener('click', async (event) => {
+  const button = event.target.closest('button,[data-action]');
+  if (!button || button.disabled) return;
+  const data = button.dataset;
+  try {
+    if (data.filterInk) {
+      state.inkFilter = state.inkFilter === data.filterInk ? '' : data.filterInk;
+      syncInkFilter();
+      return;
+    }
+    if (data.tab) {
+      state.tab = data.tab;
+      renderEditor();
+      return;
+    }
+    if (data.ink) {
+      const [section, index] = data.inkTarget.split(':');
+      toggleInk(
+        section === 'deck' ? state.current.inks : state.current[section][Number(index)].inks,
+        data.ink,
+      );
+      save();
+      renderForm();
+      preview();
+      return;
+    }
+    if (data.pickSection) {
+      state.target = data.pickSection;
+      $('#card-target').value = state.target;
+      renderResults();
+      $('#card-search').focus();
+      return;
+    }
+    if (data.selectCard) {
+      const card = state.cards.find((card) => card.id === data.selectCard);
+      if (card && addCatalogCard(state.current, state.target, card)) {
+        selectedCardsChanged();
+        toast('Carte ajoutée : ' + CARD_SECTIONS[state.target] + '.');
+      }
+      return;
+    }
+    if (data.catalogPage) {
+      state.filters.page = Number(data.catalogPage);
+      renderResults();
+      return;
+    }
+    if (data.cardPreview) {
+      const card = state.cards.find((card) => card.id === data.cardPreview);
+      if (card) openDialog(cardDetail(card), 'card-detail-dialog');
+      return;
+    }
+    if (data.editCatalogCard) {
+      editCatalogCard(state.cards.find((card) => card.id === data.editCatalogCard));
+      return;
+    }
+    if (data.hideCatalogCard) {
+      if (
+        await confirmAction(
+          'Retirer cette carte ?',
+          'Elle sera masquée du catalogue local. Les fiches existantes restent inchangées.',
+          'Retirer',
+        )
+      )
+        await catalogOperation(
+          () => repository.remove(data.hideCatalogCard),
+          'Carte retirée du catalogue local.',
+        );
+      return;
+    }
+    if (data.add) {
+      const section = data.add;
+      state.current[section].push(
+        ['favorable', 'unfavorable'].includes(section)
+          ? { name: '', note: '', inks: [] }
+          : section === 'lines'
+            ? { name: '', note: '' }
+            : { name: '', qty: 1, note: '', image: '' },
+      );
+      save();
+      renderForm();
+      preview();
+      return;
+    }
+    if (data.remove) {
+      const [section, index] = data.remove.split(':');
+      state.current[section].splice(Number(index), 1);
+      save();
+      renderForm();
+      preview();
+      return;
+    }
+    if (data.move) {
+      const [section, index, direction] = data.move.split(':');
+      moveRow(state.current[section], Number(index), Number(direction));
+      save();
+      renderForm();
+      preview();
+      return;
+    }
+    await handleAction(data.action, data.id);
+  } catch (error) {
+    toast(error.message || 'Cette action n’a pas pu aboutir.');
+  }
+});
+
+async function handleAction(action, id) {
+  const deck = id ? state.decks.find((deck) => deck.id === id) : state.current;
+  switch (action) {
+    case 'new':
+      state.current = createDeck();
+      save();
+      openEditor(state.current);
+      break;
+    case 'home':
+      if (state.mode === 'edit') save();
+      library();
+      break;
+    case 'read':
+      read(deck);
+      break;
+    case 'edit':
+      openEditor(deck);
+      break;
+    case 'read-current':
+      save();
+      read(state.current);
+      break;
+    case 'edit-current':
+      openEditor(state.current);
+      break;
+    case 'remove-image':
+      state.current.image = '';
+      save();
+      renderForm();
+      preview();
+      break;
+    case 'export':
+      downloadText(
+        encodeDeckExport(state.current),
+        normalize(state.current.name || 'fiche-lorcana').replace(/[^a-z0-9]+/g, '-') + '.json',
+      );
+      toast('Fiche exportée, image comprise.');
+      break;
+    case 'print':
+      await document.fonts?.ready;
+      window.print();
+      break;
+    case 'duplicate': {
+      const copy = structuredClone(state.current);
+      Object.assign(copy, {
+        id: uid(),
+        name: copy.name + ' (copie)',
+        example: false,
+        updated: new Date().toISOString(),
+      });
+      state.decks.unshift(copy);
+      persist();
+      openEditor(copy);
+      toast('Copie créée.');
+      break;
+    }
+    case 'delete':
+      if (
+        await confirmAction(
+          'Supprimer cette fiche ?',
+          'La fiche sera supprimée de cet appareil.',
+          'Supprimer',
+        )
+      ) {
+        state.decks = state.decks.filter((deck) => deck.id !== state.current.id);
+        persist();
+        library();
+        toast('Fiche supprimée.');
+      }
+      break;
+    case 'zoom': {
+      const dialog = openDialog(
+        `<img class="full-image" src="${esc(state.current.image)}" alt="Decklist agrandie">`,
+        'image-dialog',
+      );
+      dialog.focus();
+      break;
+    }
+    case 'catalog-manage':
+      if (state.mode === 'edit') save();
+      renderCatalog();
+      window.scrollTo(0, 0);
+      break;
+    case 'catalog-retry':
+      await loadCatalog();
+      break;
+    case 'catalog-clear-filters':
+      state.filters = defaultFilters();
+      renderBrowser();
+      break;
+    case 'catalog-new':
+      editCatalogCard();
+      break;
+    case 'catalog-refresh':
+      await catalogOperation(
+        () => repository.refresh(),
+        'Catalogue officiel actualisé. Vos modifications locales sont conservées.',
+      );
+      break;
+    case 'catalog-import':
+      $('#catalog-import-file').click();
+      break;
+    case 'catalog-export':
+      downloadText(JSON.stringify(state.catalog, null, 2), 'grimoire-catalogue.json');
+      toast('Catalogue exporté avec vos modifications.');
+      break;
+    case 'catalog-reset':
+      if (
+        await confirmAction(
+          'Restaurer le catalogue d’origine ?',
+          'Les ajouts, corrections et cartes masquées seront retirés du catalogue local. Exportez-le si vous souhaitez les conserver. Les fiches restent inchangées.',
+          'Restaurer',
+        )
+      )
+        await catalogOperation(() => repository.reset(), 'Catalogue intégré restauré.');
+      break;
+  }
+}
+
+app.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' && event.target.matches('[role="button"][data-action]'))
+    event.target.click();
+});
+$('#nav-library').onclick = () => handleAction('home');
+$('#nav-catalog').onclick = () => handleAction('catalog-manage');
+$('.brand').onclick = (event) => {
+  event.preventDefault();
+  handleAction('home');
+};
+$('#import-top').onclick = () => $('#import-file').click();
+$('#import-file').onchange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const document = await readJSONFile(file, 15 * 1024 * 1024);
+    const deck = decodeDeckExport(JSON.stringify(document));
+    state.decks.unshift(deck);
+    persist();
+    read(deck);
+    toast('Fiche importée sur cet appareil.');
+  } catch (error) {
+    toast('Import impossible : ' + error.message);
+  } finally {
+    event.target.value = '';
+  }
+};
+$('#catalog-import-file').onchange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const raw = await readJSONFile(file);
+    if (
+      await confirmAction(
+        'Importer ce catalogue ?',
+        'Le catalogue local sera remplacé par le contenu du fichier. Les fiches restent inchangées.',
+        'Importer',
+      )
+    )
+      await catalogOperation(
+        () => repository.import(raw),
+        'Catalogue importé et enregistré sur cet appareil.',
+      );
+  } catch (error) {
+    toast('Import impossible : ' + error.message);
+  } finally {
+    event.target.value = '';
+  }
+};
+document.addEventListener('paste', (event) => {
+  if (state.mode !== 'edit' || state.tab !== 'identity') return;
+  const file = [...(event.clipboardData?.items || [])]
+    .find((item) => item.type.startsWith('image/'))
+    ?.getAsFile();
+  if (file) {
+    event.preventDefault();
+    loadImage(file);
+  }
+});
+
+try {
+  const loaded = loadDecks(localStorage, createSampleDeck);
+  state.decks = loaded.decks;
+  if (loaded.warnings.length)
+    toast('Certaines fiches sont illisibles. La sauvegarde originale n’a pas été modifiée.');
+} catch {
+  state.decks = [createSampleDeck()];
+  toast('La sauvegarde locale est indisponible. Exportez vos fiches pour les conserver.');
+}
+library();
+loadCatalog();

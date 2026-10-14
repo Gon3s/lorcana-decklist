@@ -38,32 +38,6 @@
   font-size: 14px;
   color: var(--muted);
 }
-.catalog-management {
-  padding: 23px;
-  border: 1px solid #bba16e66;
-  background: #111d36;
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  justify-content: space-between;
-}
-.catalog-management strong {
-  font-size: 14px;
-  color: #e5cea0;
-}
-.catalog-management p {
-  margin: 9px 0;
-  font-size: 14px;
-  color: #a4b4d0;
-}
-.catalog-management small {
-  font-size: 14px;
-  color: #8296b9;
-}
-.catalog-management .actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
 .catalog-feedback {
   min-height: 20px;
   font-size: 14px;
@@ -375,13 +349,6 @@
   .catalog-card-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .catalog-management {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .catalog-management .actions {
-    justify-content: flex-start;
-  }
 }
 @media (max-width: 850px) {
   .catalog-filters {
@@ -430,18 +397,6 @@
   }
   .catalog-summary span {
     font-size: 14px;
-  }
-  .catalog-management {
-    padding: 17px;
-    gap: 15px;
-  }
-  .catalog-management .actions {
-    width: 100%;
-  }
-  .catalog-management .btn {
-    flex: 1;
-    font-size: 14px;
-    white-space: normal;
   }
   .catalog-browser {
     padding: 15px;
@@ -506,9 +461,8 @@
   }
 }
 @media print {
-  .catalog-browser,
-  .catalog-management {
-    display: none !important;
+  .catalog-browser {
+    display: none;
   }
 }
 

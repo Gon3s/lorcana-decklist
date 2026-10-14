@@ -86,3 +86,7 @@ Voir [ASSETS.md](ASSETS.md) pour les sources. Projet de fans indépendant. Disne
 - Oxlint assure le linting ; Oxfmt assure le formatage. Les deux sont exécutés dans GitHub Actions.
 
 Les anciens catalogues en cache reçoivent automatiquement les numéros de réimpression manquants depuis le catalogue intégré. Les corrections, ajouts et cartes masquées sont conservés. Si cette opération échoue, le catalogue en cache reste disponible. Décocher le filtre des encres du deck retire le filtrage automatique ; ouvrir la gestion du catalogue réinitialise les filtres du sélecteur.
+
+## Liens directs
+
+La navigation utilise des routes avec fragment, compatibles avec GitHub Pages : `#/fiches`, `#/catalogue`, `#/fiche/identifiant` et `#/modifier/identifiant/cards`. Le catalogue conserve dans l’URL la recherche, les filtres et la pagination. Ces liens peuvent être copiés et ouverts directement, et les boutons précédent/suivant du navigateur restaurent la page. Les fiches restent locales : leur URL nécessite la fiche enregistrée dans ce navigateur. Pour transmettre leur contenu à une autre personne, utiliser l’export et l’import JSON.

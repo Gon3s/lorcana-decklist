@@ -1,7 +1,7 @@
 import { cardPrinting } from '../core/catalog.js';
 import { CARD_SECTIONS, CARD_TYPES, INKS } from '../core/constants.js';
 import { esc, inkIcon, inksHTML, selectOptions } from './html.js';
-import { formatDate, safeURL } from '../core/utils.js';
+import { safeURL } from '../core/utils.js';
 
 export function catalogPage({ document, count, warning, busy }) {
   return /* HTML */ ` <div class="workspace-top">
@@ -16,6 +16,13 @@ export function catalogPage({ document, count, warning, busy }) {
         </button>
         <button class="btn small" data-action="catalog-import" ${busy ? 'disabled' : ''}>
           Importer JSON
+        </button>
+        <button
+          class="btn small ghost"
+          data-action="catalog-reset"
+          ${busy || !document ? 'disabled' : ''}
+        >
+          Catalogue d’origine
         </button>
         <button
           class="btn primary small"
@@ -36,29 +43,6 @@ export function catalogPage({ document, count, warning, busy }) {
         <strong>${count.toLocaleString('fr-FR')}</strong><span>cartes disponibles</span>
       </div>
     </div>
-    <section class="catalog-management" aria-label="Gestion du catalogue">
-      <div>
-        <strong
-          >${busy ? 'Opération en cours…' : document ? 'Catalogue prêt' : 'Chargement du catalogue…'}</strong
-        >
-        <p>
-          ${document ? `Données du ${formatDate(document.updated)} · ${document.custom.length} ajouts · ${Object.keys(document.overrides).length} corrections · ${document.hidden.length} masquées` : 'Le catalogue intégré reste la source de secours.'}
-        </p>
-        <small
-          >Modifications enregistrées sur cet appareil. Les fiches déjà créées gardent leurs
-          cartes.</small
-        >
-      </div>
-      <div class="actions">
-        <button
-          class="btn small ghost"
-          data-action="catalog-reset"
-          ${busy || !document ? 'disabled' : ''}
-        >
-          Catalogue d’origine
-        </button>
-      </div>
-    </section>
     <p class="catalog-feedback ${warning ? 'error' : ''}" role="status">${esc(warning)}</p>
     <div id="catalog-browser"></div>
     <p class="source-note">

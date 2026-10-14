@@ -1,3 +1,4 @@
+import { parseRoute, routeHash } from './js/core/routes.js';
 import { CARD_SECTIONS } from './js/core/constants.js';
 import {
   createDeck,
@@ -63,6 +64,45 @@ const state = {
   catalogWarning: '',
 };
 let toastTimer;
+let restoringRoute = false;
+
+function syncRoute(replace = false) {
+  if (restoringRoute) return;
+  const hash = routeHash(state);
+  if (window.location.hash === hash) return;
+  window.history[replace ? 'replaceState' : 'pushState'](null, '', hash);
+}
+function restoreRoute() {
+  if (state.mode === 'edit') save();
+  document.querySelectorAll('.app-dialog').forEach((dialog) => dialog.close());
+  const route = parseRoute(window.location.hash);
+  restoringRoute = true;
+  try {
+    if (route.mode === 'catalog') {
+      state.current = null;
+      state.filters = { ...defaultFilters(), ...route.filters };
+      renderCatalog();
+    } else if (route.mode === 'edit' || route.mode === 'read') {
+      const deck = state.decks.find((deck) => deck.id === route.id);
+      if (!deck) {
+        library();
+        toast(
+          'Cette fiche n’est pas enregistrée sur cet appareil. Importez son fichier JSON pour la consulter.',
+        );
+      } else if (route.mode === 'read') read(deck);
+      else {
+        openEditor(deck);
+        state.tab = route.tab;
+        renderEditor();
+      }
+    } else library();
+  } finally {
+    restoringRoute = false;
+  }
+  syncRoute(true);
+}
+window.addEventListener('popstate', restoreRoute);
+window.addEventListener('hashchange', restoreRoute);
 
 function toast(message) {
   $('#toast').textContent = message;
@@ -71,6 +111,7 @@ function toast(message) {
   toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 4200);
 }
 function setNavigation() {
+  syncRoute();
   $('#nav-library').classList.toggle('active', state.mode !== 'catalog');
   $('#nav-catalog').classList.toggle('active', state.mode === 'catalog');
 }
@@ -247,6 +288,7 @@ function renderResults() {
     deckInks: state.current?.inks || [],
   });
   state.filters.page = result.page;
+  if (state.mode === 'catalog') syncRoute(true);
   $('#catalog-result-count').textContent =
     result.total.toLocaleString('fr-FR') +
     ' carte' +
@@ -463,6 +505,7 @@ app.addEventListener('click', async (event) => {
     }
     if (data.catalogPage) {
       state.filters.page = Number(data.catalogPage);
+      if (state.mode === 'catalog') syncRoute();
       renderResults();
       return;
     }
@@ -712,5 +755,5 @@ try {
   state.decks = [createSampleDeck()];
   toast('La sauvegarde locale est indisponible. Exportez vos fiches pour les conserver.');
 }
-library();
+restoreRoute();
 loadCatalog();

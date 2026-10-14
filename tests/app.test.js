@@ -59,8 +59,11 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('#nav-catalog'));
   click('#nav-catalog');
   assert.ok($('.catalog-heading'));
+  assert.equal($('.catalog-management'), null);
+  assert.equal(window.location.hash, '#/catalogue');
   assert.equal($$('.catalog-card').length, 24);
   input('#card-search', 'merlin');
+  assert.equal(new URLSearchParams(window.location.hash.split('?')[1]).get('query'), 'merlin');
   assert.ok($$('.catalog-card').length > 0);
   assert.ok(
     $$('.catalog-card h3').every((element) => element.textContent.toLowerCase().includes('merlin')),
@@ -102,6 +105,7 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.equal(stored.keys[0].id, id);
   assert.equal(stored.core[0].id, id);
   click('[data-tab="strategy"]');
+  assert.equal(window.location.hash, '#/modifier/' + stored.id + '/strategy');
   input('#f-mulligan', 'Chercher une courbe jouable');
   click('[data-action="read-current"]');
   assert.ok($('.sheet').textContent.includes('Chercher une courbe jouable'));
@@ -111,5 +115,25 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.equal($$('[data-catalog-ink].selected').length, 0);
   assert.equal($('#card-search').value, '');
   assert.equal($$('.catalog-card').length, 24);
+  window.history.pushState(null, '', '#/catalogue?query=merlin&inks=amethyst&page=2');
+  window.dispatchEvent(new window.PopStateEvent('popstate'));
+  assert.equal($('#card-search').value, 'merlin');
+  assert.equal($$('[data-catalog-ink].selected').length, 1);
+  window.history.pushState(null, '', '#/modifier/' + stored.id + '/cards');
+  window.dispatchEvent(new window.PopStateEvent('popstate'));
+  assert.ok($('#selected-card-sections'));
+  assert.equal($$('#section-core .selected-card').length, 1);
+  window.history.back();
+  await new Promise((resolve) => nativeSetTimeout(resolve, 30));
+  assert.ok($('.catalog-heading'));
+  assert.equal($('#card-search').value, 'merlin');
+  window.history.forward();
+  await new Promise((resolve) => nativeSetTimeout(resolve, 30));
+  assert.ok($('#selected-card-sections'));
+  window.history.pushState(null, '', '#/fiche/missing');
+  window.dispatchEvent(new window.PopStateEvent('popstate'));
+  assert.ok($('#grid'));
+  assert.equal(window.location.hash, '#/fiches');
+  assert.ok($('#toast').textContent.includes('pas enregistrée'));
   await window.happyDOM.abort();
 });

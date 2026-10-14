@@ -33,22 +33,12 @@ header {
   letter-spacing: 3px;
   gap: 13px;
 }
-.brandmark {
-  font:
-    40px Georgia,
-    serif;
-  line-height: 1;
-  letter-spacing: 0;
-  border: 1px solid #bfa16a88;
-  color: #e5c68a;
-  padding: 6px 10px;
-  margin-right: 12px;
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: #182640aa;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+.brand-logo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 .brand span:last-child {
   padding-top: 0;
@@ -1166,12 +1156,9 @@ dialog p {
     gap: 7px;
     letter-spacing: 2px;
   }
-  .brandmark {
-    font-size: 25px;
-    width: 33px;
-    height: 33px;
-    padding: 3px;
-    margin-right: 8px;
+  .brand-logo {
+    width: 48px;
+    height: 48px;
   }
   .brand small {
     font-size: 14px;

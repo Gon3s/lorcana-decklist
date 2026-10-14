@@ -371,9 +371,10 @@ function handleCardFilter(event) {
   if (!key) return false;
   if (key === 'deckOnly') {
     state.filters.deckOnly = event.target.checked;
-    if (event.target.checked) state.filters.inks = [...(state.current?.inks || [])];
+    state.filters.inks = event.target.checked ? [...(state.current?.inks || [])] : [];
     state.filters.page = 1;
     renderBrowser();
+    $('#card-deck-only')?.focus();
     return true;
   }
   state.filters[key] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -421,6 +422,7 @@ app.addEventListener('click', async (event) => {
       else state.filters.inks.push(data.catalogInk);
       state.filters.page = 1;
       renderBrowser();
+      document.querySelector(`[data-catalog-ink="${data.catalogInk}"]`)?.focus();
       return;
     }
     if (data.filterInk) {
@@ -603,6 +605,7 @@ async function handleAction(action, id) {
     }
     case 'catalog-manage':
       if (state.mode === 'edit') save();
+      state.filters = defaultFilters();
       renderCatalog();
       window.scrollTo(0, 0);
       break;

@@ -76,9 +76,17 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   click('[data-tab="cards"]');
   assert.equal($('#card-deck-only').checked, true);
   assert.equal($$('[data-catalog-ink].selected').length, 2);
+  $('#card-deck-only').checked = false;
+  $('#card-deck-only').dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal($$('[data-catalog-ink].selected').length, 0);
+  assert.equal($('#card-deck-only').checked, false);
+  $('#card-deck-only').checked = true;
+  $('#card-deck-only').dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal($$('[data-catalog-ink].selected').length, 2);
   click('[data-catalog-ink="emerald"]');
   assert.equal($('#card-deck-only').checked, false);
   assert.equal($$('[data-catalog-ink].selected').length, 3);
+  assert.equal(window.document.activeElement.dataset.catalogInk, 'emerald');
   input('#card-search', 'merlin');
   const id = $('[data-select-card]').dataset.selectCard;
   click('[data-select-card]');
@@ -99,5 +107,9 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('.sheet').textContent.includes('Chercher une courbe jouable'));
   click('[data-action="home"]');
   assert.ok($('#grid').textContent.includes('Test de non-régression'));
+  click('#nav-catalog');
+  assert.equal($$('[data-catalog-ink].selected').length, 0);
+  assert.equal($('#card-search').value, '');
+  assert.equal($$('.catalog-card').length, 24);
   await window.happyDOM.abort();
 });

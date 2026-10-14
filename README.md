@@ -84,3 +84,5 @@ Voir [ASSETS.md](ASSETS.md) pour les sources. Projet de fans indépendant. Disne
 - Le sélecteur des cartes accepte plusieurs encres. Une carte bicolore doit avoir ses deux encres autorisées. Dans l’éditeur, les encres du deck sont sélectionnées par défaut ; la sélection manuelle permet de les ajuster.
 - Tri initial : extension principale la plus récente, puis numéro de collection croissant. Lorsqu’une extension est filtrée, son numéro de réimpression est utilisé.
 - Oxlint assure le linting ; Oxfmt assure le formatage. Les deux sont exécutés dans GitHub Actions.
+
+Les anciens catalogues en cache reçoivent automatiquement les numéros de réimpression manquants depuis le catalogue intégré. Les corrections, ajouts et cartes masquées sont conservés. Si cette opération échoue, le catalogue en cache reste disponible. Décocher le filtre des encres du deck retire le filtrage automatique ; ouvrir la gestion du catalogue réinitialise les filtres du sélecteur.

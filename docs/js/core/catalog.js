@@ -226,3 +226,31 @@ export function cardPrinting(card, selectedSet = '') {
     )[0] || { set: selectedSet || '', number: null }
   );
 }
+
+/** Fill only missing legacy numbering; never replace personal card content. */
+export function upgradeLegacyPrintings(raw, reference) {
+  const document = normalizeCatalog(raw);
+  const known = new Map(reference.cards.map((card) => [card.id, card]));
+  function upgrade(original, card) {
+    if (Array.isArray(original?.printings)) return card;
+    const official = known.get(card.id);
+    if (!official) return card;
+    const printings = official.printings.filter((printing) => card.set.includes(printing.set));
+    if (!printings.length) return card;
+    return { ...card, printings: structuredClone(printings) };
+  }
+  const originals = new Map(
+    (Array.isArray(raw.cards) ? raw.cards : []).map((card) => [String(card.id), card]),
+  );
+  document.cards = document.cards.map((card) => upgrade(originals.get(card.id), card));
+  for (const [id, card] of Object.entries(document.overrides)) {
+    document.overrides[id] = upgrade(raw.overrides?.[id], card);
+  }
+  return document;
+}
+export function needsPrintingUpgrade(raw) {
+  return (
+    (Array.isArray(raw.cards) && raw.cards.some((card) => !Array.isArray(card.printings))) ||
+    Object.values(raw.overrides ?? {}).some((card) => !Array.isArray(card.printings))
+  );
+}

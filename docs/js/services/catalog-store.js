@@ -1,5 +1,11 @@
 import { CATALOG_URL, CATALOG_SNAPSHOT_URL } from '../core/constants.js';
-import { normalizeCatalog, withCard, withoutCard } from '../core/catalog.js';
+import {
+  normalizeCatalog,
+  withCard,
+  withoutCard,
+  upgradeLegacyPrintings,
+  needsPrintingUpgrade,
+} from '../core/catalog.js';
 
 /** One IndexedDB document; large catalogues don't consume the deck localStorage quota. */
 export function createCatalogCache(indexedDB = globalThis.indexedDB) {
@@ -55,9 +61,9 @@ export class CatalogRepository {
     this.document = null;
     this.warning = '';
   }
-  async fetchDocument(url) {
+  async fetchDocument(url, timeoutMs = 25000) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await this.fetcher(url, {
         signal: controller.signal,
@@ -74,6 +80,17 @@ export class CatalogRepository {
       const cached = await this.cache.read();
       if (cached) {
         this.document = normalizeCatalog(cached);
+        if (needsPrintingUpgrade(cached)) {
+          try {
+            const reference = await this.fetchDocument(CATALOG_SNAPSHOT_URL, 5000);
+            const upgraded = upgradeLegacyPrintings(cached, reference);
+            await this.cache.write(upgraded);
+            this.document = upgraded;
+          } catch {
+            this.warning =
+              'Catalogue conservé. Les anciens numéros de réimpression n’ont pas pu être actualisés. Réessayez en actualisant le catalogue.';
+          }
+        }
         return this.document;
       }
     } catch {

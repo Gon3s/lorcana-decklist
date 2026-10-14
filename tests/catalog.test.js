@@ -250,3 +250,65 @@ test('normalization preserves official zero numbering and removes long dashes', 
   assert.equal(card.name, 'Bruno-Madrigal');
   assert.equal(card.text, 'Effet-description');
 });
+
+test('legacy cached printings are enriched without losing corrections or custom cards', async () => {
+  const old = {
+    cards: [card('reprint', { set: ['set1', 'set2'], number: 8 })],
+    custom: [card('custom')],
+    overrides: {
+      reprint: card('reprint', { name: 'Ma correction', set: ['set1', 'set2'], number: 8 }),
+    },
+    hidden: ['custom'],
+  };
+  const reference = normalizeCatalog({
+    cards: [
+      card('reprint', {
+        set: ['set1', 'set2'],
+        number: 8,
+        printings: [
+          { set: 'set1', number: 3 },
+          { set: 'set2', number: 8 },
+        ],
+      }),
+    ],
+  });
+  let saved;
+  const repo = new CatalogRepository({
+    cache: {
+      read: async () => old,
+      write: async (value) => {
+        saved = value;
+      },
+    },
+    fetcher: async () => ({ ok: true, json: async () => reference }),
+  });
+  await repo.load();
+  const selected = searchCatalog(createCardIndex(effectiveCards(repo.document)), { set: 'set1' });
+  assert.equal(selected.cards[0].printings.find((printing) => printing.set === 'set1').number, 3);
+  assert.equal(selected.cards[0].name, 'Ma correction');
+  assert.equal(saved.custom.length, 1);
+  assert.deepEqual(saved.hidden, ['custom']);
+});
+
+test('an offline legacy migration keeps the cached collection available', async () => {
+  const old = { cards: [card('legacy')] };
+  const repo = new CatalogRepository({
+    cache: { read: async () => old, write: async () => assert.fail('must not write') },
+    fetcher: async () => {
+      throw Error('offline');
+    },
+  });
+  await repo.load();
+  assert.equal(repo.document.cards[0].id, 'legacy');
+  assert.ok(repo.warning.includes('Catalogue conservé'));
+});
+
+test('verified collector numbering in a cache never triggers a migration fetch', async () => {
+  const doc = document();
+  const repo = new CatalogRepository({
+    cache: { read: async () => doc, write: async () => assert.fail('must not write') },
+    fetcher: async () => assert.fail('must not fetch'),
+  });
+  await repo.load();
+  assert.equal(repo.document.cards.length, 3);
+});

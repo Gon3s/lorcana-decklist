@@ -37,7 +37,6 @@ const catalog = createCatalogController({
   setNavigation,
   save: () => deck.save(),
   renderForm: () => editor.renderForm(),
-  preview: () => editor.preview(),
 });
 const editor = createEditorController({
   state,

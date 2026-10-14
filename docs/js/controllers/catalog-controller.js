@@ -37,7 +37,6 @@ export function createCatalogController({
   setNavigation,
   save,
   renderForm,
-  preview,
   repository = new CatalogRepository(),
 }) {
   const $ = query;
@@ -182,7 +181,6 @@ export function createCatalogController({
       $('#selected-card-sections').innerHTML = cardSections(state.current);
     else renderForm();
     renderResults();
-    preview();
   }
 
   function handleFilter(event) {

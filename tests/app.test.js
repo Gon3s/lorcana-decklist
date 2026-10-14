@@ -73,6 +73,7 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   click('[data-close-dialog]');
   click('[data-action="home"]');
   click('[data-action="new"]');
+  assert.equal($('.preview-panel'), null);
   input('#f-name', 'Test de non-régression');
   click('[data-ink="ruby"]');
   click('[data-ink="amethyst"]');

@@ -737,12 +737,6 @@ footer > span:first-child {
   letter-spacing: -0.8px;
   margin-bottom: 30px;
 }
-.editor-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
-  gap: 40px;
-  align-items: start;
-}
 .editor-panel {
   border: 1px solid var(--line);
   background: #f8f6ee;
@@ -926,18 +920,6 @@ label small {
   color: var(--muted);
   margin-top: 5px;
   font-size: 14px;
-}
-.preview-panel {
-  position: sticky;
-  top: 22px;
-}
-.preview-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  letter-spacing: 1.1px;
-  color: var(--muted);
-  margin-bottom: 12px;
 }
 .sheet {
   border: 1px solid #bfc4b5;
@@ -1253,9 +1235,6 @@ dialog .actions {
   .deck-body h3 {
     font-size: 27px;
   }
-  .editor-layout {
-    gap: 25px;
-  }
   .form-body {
     padding: 22px;
   }
@@ -1317,12 +1296,6 @@ dialog .actions {
   }
   .search {
     width: 210px;
-  }
-  .editor-layout {
-    grid-template-columns: 1fr;
-  }
-  .preview-panel {
-    position: static;
   }
   .read-layout .sheet-head h2 {
     font-size: 55px;
@@ -1600,9 +1573,6 @@ dialog .actions {
     font-size: 14px;
     padding: 18px 0 25px;
   }
-  .preview-label {
-    font-size: 14px;
-  }
   .hero-art:hover .card-three {
     transform: translate(80px, -12px) rotate(23deg);
   }
@@ -1629,7 +1599,6 @@ dialog .actions {
   footer,
   .workspace-top,
   .workspace-title,
-  .preview-label,
   .editor-panel,
   #toast {
     display: none !important;
@@ -1637,9 +1606,6 @@ dialog .actions {
   main {
     padding: 0;
     max-width: none;
-  }
-  .editor-layout {
-    display: block;
   }
   .sheet {
     border: 0;
@@ -1673,9 +1639,6 @@ dialog .actions {
   }
   .read-layout {
     max-width: none;
-  }
-  .preview-panel {
-    position: static;
   }
   .read-layout .sheet-head,
   .read-layout .sheet-body {

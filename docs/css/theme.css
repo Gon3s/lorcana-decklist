@@ -686,9 +686,6 @@ footer > span:first-child {
 .back {
   color: #aebad1;
 }
-.editor-layout {
-  gap: 32px;
-}
 .editor-panel {
   background: #111d36ee;
   border: 1px solid #4b5c7b80;
@@ -795,10 +792,6 @@ select:focus {
 }
 .result-card small {
   color: #92a6c5;
-}
-.preview-label {
-  color: #a68e62;
-  font-size: 14px;
 }
 .sheet {
   background: #101c33;
@@ -1128,12 +1121,6 @@ dialog p {
   .hero-art:hover .card-three {
     transform: translate(80px, 0) rotate(22deg);
   }
-  .editor-layout {
-    grid-template-columns: 1fr;
-  }
-  .preview-panel {
-    position: static;
-  }
   .read-layout .sheet-head h2 {
     font-size: 42px;
   }
@@ -1440,9 +1427,6 @@ dialog p {
   .empty-block {
     font-size: 14px;
   }
-  .preview-label {
-    font-size: 14px;
-  }
   .sheet {
     box-shadow: 3px 4px 0 #080e1c55;
   }
@@ -1535,9 +1519,6 @@ dialog p {
   }
   .sheet-head:after {
     display: none;
-  }
-  .preview-panel {
-    position: static;
   }
 }
 

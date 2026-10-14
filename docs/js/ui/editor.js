@@ -164,27 +164,21 @@ export function editorPage(deck, tab) {
       </div>
     </div>
     <h1 class="workspace-title">${deck.name ? 'Éditer votre fiche' : 'Une nouvelle stratégie.'}</h1>
-    <div class="editor-layout">
-      <section class="editor-panel">
-        <div class="tabs" aria-label="Rubriques de la fiche">
-          ${TABS.map(
-            ([id, label]) =>
-              /* HTML */ ` <button
-                class="tab ${tab === id ? 'active' : ''}"
-                data-tab="${id}"
-                aria-pressed="${tab === id}"
-              >
-                ${label}
-              </button>`,
-          ).join('')}
-        </div>
-        <div class="form-body" id="form"></div>
-      </section>
-      <aside class="preview-panel">
-        <div class="preview-label"><span>APERÇU EN DIRECT</span><span>✦ VOTRE GRIMOIRE</span></div>
-        <div id="preview"></div>
-      </aside>
-    </div>`;
+    <section class="editor-panel">
+      <div class="tabs" aria-label="Rubriques de la fiche">
+        ${TABS.map(
+          ([id, label]) =>
+            /* HTML */ ` <button
+              class="tab ${tab === id ? 'active' : ''}"
+              data-tab="${id}"
+              aria-pressed="${tab === id}"
+            >
+              ${label}
+            </button>`,
+        ).join('')}
+      </div>
+      <div class="form-body" id="form"></div>
+    </section>`;
 }
 
 export function cardSections(deck) {

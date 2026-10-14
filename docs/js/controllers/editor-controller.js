@@ -2,15 +2,10 @@ import { moveRow, toggleInk } from '../core/decks.js';
 import { quantity, cleanText } from '../core/utils.js';
 import { readDeckImage } from '../services/files.js';
 import { editorPage, identityForm, matchupsForm, strategyForm, cardsForm } from '../ui/editor.js';
-import { sheet } from '../ui/sheet.js';
 import { createCatalogFilters } from './catalog-controller.js';
 
 export function createEditorController({ state, app, query, toast, setNavigation, catalog, save }) {
   const $ = query;
-
-  function preview() {
-    if ($('#preview') && state.current) $('#preview').innerHTML = sheet(state.current);
-  }
 
   function openEditor(deck) {
     if (!deck) return;
@@ -26,7 +21,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
     app.innerHTML = editorPage(state.current, state.tab);
     setNavigation();
     renderForm();
-    preview();
   }
 
   function renderForm() {
@@ -73,7 +67,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
       deck.image = image;
       save();
       renderForm();
-      preview();
       toast('Decklist ajoutée.');
     } catch (error) {
       toast(error.message || 'Impossible de lire cette image.');
@@ -84,7 +77,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
     state.current.image = '';
     save();
     renderForm();
-    preview();
   }
 
   function handleInput(event) {
@@ -93,13 +85,11 @@ export function createEditorController({ state, app, query, toast, setNavigation
     if (field) {
       state.current[field] = cleanText(event.target.value);
       save();
-      preview();
     }
     if (list) {
       state.current[list][index][prop] =
         prop === 'qty' ? quantity(event.target.value) : cleanText(event.target.value);
       save();
-      preview();
     }
     return Boolean(field || list);
   }
@@ -108,7 +98,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
     if (state.mode !== 'edit' || !event.target.dataset.field) return false;
     state.current[event.target.dataset.field] = cleanText(event.target.value);
     save();
-    preview();
     return true;
   }
 
@@ -126,7 +115,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
       );
       save();
       renderForm();
-      preview();
       return true;
     }
     if (data.add) {
@@ -140,7 +128,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
       );
       save();
       renderForm();
-      preview();
       return true;
     }
     if (data.remove) {
@@ -148,7 +135,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
       state.current[section].splice(Number(index), 1);
       save();
       renderForm();
-      preview();
       return true;
     }
     if (data.move) {
@@ -156,7 +142,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
       moveRow(state.current[section], Number(index), Number(direction));
       save();
       renderForm();
-      preview();
       return true;
     }
     return false;
@@ -176,7 +161,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
   }
 
   return {
-    preview,
     openEditor,
     renderEditor,
     renderForm,

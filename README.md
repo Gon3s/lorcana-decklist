@@ -28,12 +28,11 @@ Projet de fans indépendant. Disney Lorcana © Disney.
 
 ## Publication sur GitHub Pages
 
-Dans Settings → Pages → Build and deployment :
+Dans Settings → Pages → Build and deployment, sélectionner **GitHub Actions** comme source.
 
-1. Source : **Deploy from a branch**.
-2. Branch : **main**.
-3. Folder : **/docs**.
-4. Save.
+Le workflow `.github/workflows/pages.yml` valide l’application et publie le dossier `docs` à chaque push sur `main`. Il peut aussi être lancé dans Actions → Deploy Grimoire to GitHub Pages → Run workflow.
+
+Le déploiement utilise les actions officielles GitHub et le jeton éphémère fourni au workflow ; aucun secret personnel n’est nécessaire.
 
 Adresse prévue après activation : https://gon3s.github.io/lorcana-decklist/
 

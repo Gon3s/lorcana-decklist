@@ -34,7 +34,8 @@ npm run build         # publication statique dans _site/
 
 | Dossier                | Responsabilité                                                                         |
 | ---------------------- | -------------------------------------------------------------------------------------- |
-| `docs/app.js`          | État de la session, navigation, orchestration des événements                           |
+| `docs/app.js`          | Composition de l'application, navigation et orchestration des fiches                   |
+| `docs/js/controllers/` | Contrôleurs de fonctionnalités ; coordination de l'état, des services et des vues      |
 | `docs/js/core/`        | Modèles, validation, recherche/pagination, règles de sélection ; aucun DOM ni stockage |
 | `docs/js/services/`    | Persistance des fiches, cache IndexedDB du catalogue, requêtes réseau et fichiers      |
 | `docs/js/ui/`          | Fonctions de rendu HTML ; état fourni en argument et valeurs échappées                 |

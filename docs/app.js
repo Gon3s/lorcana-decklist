@@ -23,6 +23,10 @@ const state = {
   target: 'keys',
   catalogBusy: false,
   catalogWarning: '',
+  cardSelection: [],
+  creationStep: 1,
+  creationMethod: '',
+  creationError: '',
 };
 let toastTimer;
 let restoringRoute = false;
@@ -103,7 +107,7 @@ window.addEventListener('popstate', restoreRoute);
 window.addEventListener('hashchange', restoreRoute);
 
 app.addEventListener('input', (event) => {
-  if (!catalog.handleFilter(event)) editor.handleInput(event);
+  if (!catalog.handleFilter(event) && !deck.handleInput(event)) editor.handleInput(event);
 });
 app.addEventListener('change', (event) => {
   if (!catalog.handleFilter(event)) editor.handleChange(event);

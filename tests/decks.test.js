@@ -6,6 +6,7 @@ import {
   decodeDeckExport,
   encodeDeckExport,
   addCatalogCard,
+  addCatalogCards,
   toggleInk,
   moveRow,
 } from '../docs/js/core/decks.js';
@@ -34,6 +35,18 @@ test('a card can be key and core without duplicates in either section', () => {
   assert.equal(deck.keys[0].qty, 4);
   assert.equal(deck.keys[0].note, 'Synergie');
   assert.throws(() => addCatalogCard(deck, 'unknown', card));
+});
+test('catalog cards can be added as one duplicate-safe batch', () => {
+  const deck = createDeck();
+  addCatalogCard(deck, 'keys', card);
+  const second = { ...card, id: 'mickey', name: 'Mickey Mouse' };
+  assert.equal(addCatalogCards(deck, 'keys', [card, second]), 1);
+  assert.deepEqual(
+    deck.keys.map((row) => row.id),
+    ['merlin', 'mickey'],
+  );
+  assert.throws(() => addCatalogCards(deck, 'unknown', [second]));
+  assert.throws(() => addCatalogCards(deck, 'keys', null), /Liste de cartes/);
 });
 test('two distinct inks maximum in UI and imports', () => {
   const inks = [];

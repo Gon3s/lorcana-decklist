@@ -98,6 +98,11 @@ export function addCatalogCard(deck, section, card) {
   });
   return true;
 }
+export function addCatalogCards(deck, section, cards) {
+  if (!Array.isArray(cards)) throw new Error('Liste de cartes invalide.');
+  if (!CARD_SECTIONS[section]) throw new Error('Rubrique de cartes inconnue.');
+  return cards.reduce((count, card) => count + Number(addCatalogCard(deck, section, card)), 0);
+}
 export function toggleInk(inks, ink) {
   if (!INKS[ink]) throw new Error('Encre inconnue.');
   const index = inks.indexOf(ink);

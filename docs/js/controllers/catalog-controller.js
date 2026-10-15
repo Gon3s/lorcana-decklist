@@ -1,5 +1,5 @@
 import { CARD_SECTIONS } from '../core/constants.js';
-import { addCatalogCard } from '../core/decks.js';
+import { addCatalogCards } from '../core/decks.js';
 import { createCardIndex, effectiveCards, searchCatalog } from '../core/catalog.js';
 import { uid } from '../core/utils.js';
 import { CatalogRepository } from '../services/catalog-store.js';
@@ -11,6 +11,7 @@ import {
   catalogBrowser,
   catalogResults,
   catalogPagination,
+  catalogSelection,
   catalogCardForm,
   cardDetail,
 } from '../ui/catalog.js';
@@ -52,6 +53,7 @@ export function createCatalogController({
   }
 
   function renderCatalog() {
+    state.cardSelection = [];
     state.mode = 'catalog';
     setNavigation();
     app.innerHTML = catalogPage({
@@ -95,8 +97,15 @@ export function createCatalogController({
       target: state.target,
       deck: state.current,
       selectedSet: state.filters.set,
+      selection: state.cardSelection,
     });
+    $('#catalog-selection').innerHTML = catalogSelection(selectedCatalogCards(), state.target);
     $('#catalog-pagination').innerHTML = catalogPagination(result);
+  }
+
+  function selectedCatalogCards() {
+    const cards = new Map(state.cards.map((card) => [card.id, card]));
+    return (state.cardSelection || []).map((id) => cards.get(id)).filter(Boolean);
   }
 
   function syncCatalog(document) {
@@ -180,15 +189,10 @@ export function createCatalogController({
     if ($('#selected-card-sections'))
       $('#selected-card-sections').innerHTML = cardSections(state.current);
     else renderForm();
-    renderResults();
+    renderBrowser();
   }
 
   function handleFilter(event) {
-    if (event.target.id === 'card-target') {
-      state.target = event.target.value;
-      renderResults();
-      return true;
-    }
     const key = event.target.dataset.cardFilter;
     if (!key) return false;
     if (key === 'deckOnly') {
@@ -207,6 +211,15 @@ export function createCatalogController({
   }
 
   function handleClick(data) {
+    if (data.cardTarget) {
+      state.target = data.cardTarget;
+      state.cardSelection = (state.cardSelection || []).filter(
+        (id) => !state.current[state.target].some((row) => row.id === id),
+      );
+      renderBrowser();
+      document.querySelector(`[data-card-target="${data.cardTarget}"]`)?.focus();
+      return true;
+    }
     if (data.catalogInk) {
       state.filters.deckOnly = false;
       const index = state.filters.inks.indexOf(data.catalogInk);
@@ -219,17 +232,41 @@ export function createCatalogController({
     }
     if (data.pickSection) {
       state.target = data.pickSection;
-      $('#card-target').value = state.target;
-      renderResults();
+      state.cardSelection = [];
+      renderBrowser();
       $('#card-search').focus();
       return true;
     }
     if (data.selectCard) {
-      const card = state.cards.find((card) => card.id === data.selectCard);
-      if (card && addCatalogCard(state.current, state.target, card)) {
+      const selected = new Set(state.cardSelection || []);
+      if (selected.has(data.selectCard)) selected.delete(data.selectCard);
+      else selected.add(data.selectCard);
+      state.cardSelection = [...selected];
+      renderResults();
+      document.querySelector(`[data-select-card="${data.selectCard}"]`)?.focus();
+      return true;
+    }
+    if (data.clearCardSelection !== undefined) {
+      state.cardSelection = [];
+      renderResults();
+      return true;
+    }
+    if (data.addCardSelection !== undefined) {
+      const added = addCatalogCards(state.current, state.target, selectedCatalogCards());
+      state.cardSelection = [];
+      if (added) {
         selectedCardsChanged();
-        toast('Carte ajoutée : ' + CARD_SECTIONS[state.target] + '.');
-      }
+        toast(
+          added +
+            ' carte' +
+            (added === 1 ? '' : 's') +
+            ' ajoutée' +
+            (added === 1 ? '' : 's') +
+            ' : ' +
+            CARD_SECTIONS[state.target] +
+            '.',
+        );
+      } else renderResults();
       return true;
     }
     if (data.catalogPage) {
@@ -269,6 +306,7 @@ export function createCatalogController({
     switch (action) {
       case 'catalog-manage':
         if (state.mode === 'edit') save();
+        state.cardSelection = [];
         state.filters = createCatalogFilters();
         renderCatalog();
         window.scrollTo(0, 0);

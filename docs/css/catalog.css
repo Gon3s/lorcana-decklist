@@ -209,6 +209,50 @@
   line-height: 1.5;
   min-height: 33px;
 }
+.catalog-card.selected .catalog-card-visual {
+  border-color: #d1b374;
+  box-shadow: 0 0 0 2px #d1b374aa;
+}
+.catalog-card-actions .btn.selected {
+  color: #e4c990;
+  background: #233654;
+  border-color: #d1b374;
+}
+.catalog-selection {
+  position: sticky;
+  z-index: 3;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 14px;
+  color: #dce4f1;
+  background: #101d36f5;
+  border: 1px solid #d1b374;
+  border-radius: 4px;
+  box-shadow: 0 10px 28px #020713aa;
+}
+.catalog-selection-copy {
+  min-width: 0;
+}
+.catalog-selection-copy strong,
+.catalog-selection-copy span {
+  display: block;
+  font-size: 14px;
+}
+.catalog-selection-copy span {
+  overflow: hidden;
+  margin-top: 5px;
+  color: #99abc7;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.catalog-selection-actions {
+  display: flex;
+  gap: 8px;
+}
 .catalog-pagination {
   display: flex;
   gap: 15px;
@@ -248,6 +292,41 @@
 .editor-panel .catalog-picker-heading .btn {
   font-size: 14px;
   padding: 6px;
+}
+.catalog-targets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.catalog-target {
+  min-height: 52px;
+  padding: 8px 10px;
+  color: #9fb0cb;
+  background: #0b172d;
+  border: 1px solid #3b5072;
+  border-radius: 3px;
+  text-align: left;
+}
+.catalog-target strong,
+.catalog-target span {
+  display: block;
+  font-size: 14px;
+}
+.catalog-target strong {
+  color: #dbe3f1;
+}
+.catalog-target span {
+  margin-top: 3px;
+}
+.catalog-target:hover {
+  background: #162641;
+  border-color: #6a7a95;
+}
+.catalog-target.selected {
+  background: #233654;
+  border-color: #d1b374;
+  box-shadow: inset 0 -2px #d1b374;
 }
 .deck-card-section {
   margin-top: 32px;
@@ -554,6 +633,26 @@
   }
   .catalog-picker-heading {
     flex-wrap: wrap;
+  }
+  .catalog-targets {
+    grid-template-columns: 1fr;
+  }
+  .catalog-target strong,
+  .catalog-target span {
+    display: inline;
+  }
+  .catalog-target span {
+    margin: 0 0 0 6px;
+  }
+  .catalog-selection {
+    grid-template-columns: 1fr;
+  }
+  .catalog-selection-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+  .catalog-selection-actions .btn {
+    width: 100%;
   }
   .hero-actions {
     flex-wrap: wrap;

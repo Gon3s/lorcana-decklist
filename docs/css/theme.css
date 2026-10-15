@@ -708,6 +708,69 @@ footer > span:first-child {
 .form-body {
   padding: 27px;
 }
+.creation-step {
+  color: #7689aa;
+  border-color: #344766;
+}
+.creation-step strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.creation-step span {
+  color: #7f91b0;
+}
+.creation-step.active {
+  color: #e2c47f;
+  border-color: #d5b574;
+}
+.creation-step.active span {
+  color: #aebbd0;
+}
+.creation-step.done {
+  color: #a9bf96;
+  border-color: #809b6b;
+}
+.creation-panel .form-body {
+  display: flex;
+  justify-content: center;
+}
+.creation-section {
+  width: 100%;
+}
+.creation-section h2 {
+  color: #dfcfaa;
+  font: 500 23px var(--serif);
+}
+.creation-choice {
+  color: #a9b9d0;
+  background: #0b172d;
+  border: 1px solid #3b5072;
+  border-radius: 3px;
+  font-size: 14px;
+}
+.creation-choice:hover {
+  background: #162641;
+  border-color: #6a7a95;
+}
+.creation-choice.selected {
+  background: #233654;
+  border-color: #d1b374;
+  box-shadow: inset 0 0 0 1px #c3a56744;
+}
+.creation-choice strong {
+  color: #e0e7f3;
+  font-size: 16px;
+}
+.creation-choice-icon {
+  color: #d8bb7d;
+}
+.creation-summary dt {
+  color: #92a4c2;
+}
+.creation-summary dd {
+  color: #e0e7f3;
+  font-weight: 600;
+}
 label {
   color: #d4ddeb;
   font-size: 14px;

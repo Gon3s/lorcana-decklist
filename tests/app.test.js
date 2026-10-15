@@ -72,12 +72,27 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('.card-detail'));
   click('[data-close-dialog]');
   click('[data-action="home"]');
+  const storedDeckCount = JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length;
+  const deckCount = Number.parseInt($('#count').textContent, 10);
   click('[data-action="new"]');
   assert.equal($('.preview-panel'), null);
-  input('#f-name', 'Test de non-régression');
+  assert.ok($('#create-name'));
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length, storedDeckCount);
+  input('#create-name', 'Fiche abandonnée');
+  click('[data-action="create-cancel"]');
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length, storedDeckCount);
+  click('[data-action="new"]');
+  input('#create-name', 'Test de non-régression');
   click('[data-ink="ruby"]');
   click('[data-ink="amethyst"]');
-  click('[data-tab="cards"]');
+  assert.equal($('#create-basics-next').disabled, false);
+  click('[data-action="create-next"]');
+  click('[data-create-method="catalog"]');
+  click('[data-action="create-next"]');
+  assert.ok($('.creation-summary').textContent.includes('Test de non-régression'));
+  click('[data-action="create-finish"]');
+  assert.ok($('#selected-card-sections'));
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1')).length, deckCount + 1);
   assert.equal($('#card-deck-only').checked, true);
   assert.equal($$('[data-catalog-ink].selected').length, 2);
   $('#card-deck-only').checked = false;
@@ -92,18 +107,44 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.equal($$('[data-catalog-ink].selected').length, 3);
   assert.equal(window.document.activeElement.dataset.catalogInk, 'emerald');
   input('#card-search', 'merlin');
-  const id = $('[data-select-card]').dataset.selectCard;
-  click('[data-select-card]');
-  assert.equal($('#card-search').value, 'merlin');
-  assert.equal($$('[data-select-card]:disabled').length, 1);
-  assert.equal($$('#section-keys .selected-card').length, 1);
-  input('#card-target', 'core', 'change');
+  const cardButtons = $$('[data-select-card]');
+  assert.ok(cardButtons.length > 1);
+  const id = cardButtons[0].dataset.selectCard;
+  const secondId = cardButtons[1].dataset.selectCard;
   click('[data-select-card="' + id + '"]');
+  assert.ok($('.catalog-selection'));
+  click('[data-clear-card-selection]');
+  assert.equal($('.catalog-selection'), null);
+  click('[data-select-card="' + id + '"]');
+  click('[data-select-card="' + secondId + '"]');
+  assert.equal($('#card-search').value, 'merlin');
+  assert.equal($$('[data-select-card][aria-pressed="true"]').length, 2);
+  assert.ok(
+    $('.catalog-selection').textContent.replace(/\s+/g, ' ').includes('2 cartes sélectionnées'),
+  );
+  assert.equal($$('#section-keys .selected-card').length, 0);
+  assert.equal(
+    JSON.parse(localStorage.getItem('grimoire-v1')).find(
+      (deck) => deck.name === 'Test de non-régression',
+    ).keys.length,
+    0,
+  );
+  click('[data-add-card-selection]');
+  assert.equal($$('[data-select-card]:disabled').length, 2);
+  assert.equal($$('#section-keys .selected-card').length, 2);
+  assert.equal($('[data-card-target="keys"] span').textContent.replace(/\s+/g, ' '), '2 cartes');
+  click('[data-card-target="core"]');
+  click('[data-select-card="' + id + '"]');
+  assert.equal($$('#section-core .selected-card').length, 0);
+  click('[data-add-card-selection]');
   assert.equal($$('#section-core .selected-card').length, 1);
   const stored = JSON.parse(localStorage.getItem('grimoire-v1')).find(
     (deck) => deck.name === 'Test de non-régression',
   );
-  assert.equal(stored.keys[0].id, id);
+  assert.deepEqual(
+    stored.keys.map((card) => card.id),
+    [id, secondId],
+  );
   assert.equal(stored.core[0].id, id);
   click('[data-tab="strategy"]');
   assert.equal(window.location.hash, '#/modifier/' + stored.id + '/strategy');
@@ -136,5 +177,13 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('#grid'));
   assert.equal(window.location.hash, '#/fiches');
   assert.ok($('#toast').textContent.includes('pas enregistrée'));
+  click('[data-action="new"]');
+  input('#create-name', 'Brouillon sans decklist');
+  click('[data-ink="amber"]');
+  click('[data-action="create-next"]');
+  click('[data-action="create-skip"]');
+  assert.ok($('.creation-summary').textContent.includes('À ajouter plus tard'));
+  click('[data-action="create-finish"]');
+  assert.equal($('#f-name').value, 'Brouillon sans decklist');
   await window.happyDOM.abort();
 });

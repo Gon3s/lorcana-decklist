@@ -12,6 +12,7 @@ export function createEditorController({ state, app, query, toast, setNavigation
     state.current = deck;
     state.mode = 'edit';
     state.tab = 'identity';
+    state.cardSelection = [];
     state.filters = { ...createCatalogFilters(), deckOnly: true, inks: [...deck.inks] };
     renderEditor();
     window.scrollTo(0, 0);
@@ -102,7 +103,9 @@ export function createEditorController({ state, app, query, toast, setNavigation
   }
 
   function handleClick(data) {
+    if (state.mode !== 'edit') return false;
     if (data.tab) {
+      if (state.tab === 'cards' && data.tab !== 'cards') state.cardSelection = [];
       state.tab = data.tab;
       renderEditor();
       return true;

@@ -178,6 +178,7 @@ test('DOM integration: deck creation, card selection and v2 persistence', async 
   click('[data-action="read-current"]');
   assert.ok($('.sheet').textContent.includes('Chercher une courbe jouable'));
   assert.equal($$('.sheet .decklist-card').length, 18);
+  assert.ok($('[data-action="share-image"]'));
   click('[data-action="home"]');
   assert.ok($('#grid').textContent.includes('Test de non-régression'));
   window.history.pushState(null, '', '#/catalogue');

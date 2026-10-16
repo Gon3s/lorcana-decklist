@@ -808,22 +808,22 @@ footer > span:first-child {
   color: #91a4c2;
 }
 .sheet .decklist-card-visual {
-  background: #e9e7dc;
-  border-color: #b4baa9;
-  box-shadow: 0 4px 10px #28352220;
+  background: #0a1428;
+  border-color: #596b89;
+  box-shadow: 0 4px 10px #02071288;
 }
 .sheet .decklist-quantity {
-  color: #fcfaf3;
-  background: var(--green);
-  border-color: #fcfaf3;
-  box-shadow: 0 2px 7px #28352255;
+  color: #10182c;
+  background: #e6c98f;
+  border-color: #f8e8bd;
+  box-shadow: 0 2px 7px #020712aa;
 }
 .sheet .decklist-card-fallback,
 .sheet .decklist-card figcaption strong {
-  color: #374333;
+  color: #dfe6f3;
 }
 .sheet .decklist-card figcaption small {
-  color: #67705e;
+  color: #91a4c2;
 }
 label {
   color: #d4ddeb;
@@ -962,6 +962,19 @@ select:focus {
 .sheet-footer {
   border-color: #7c6a4655;
   color: #9d9279;
+}
+.share-image-dialog {
+  background: #0c162b;
+  border-color: #b99d66;
+  box-shadow: 0 18px 70px #02050dcc;
+}
+.share-image-preview {
+  background: #070d1f;
+  border: 1px solid #7c6a46;
+  box-shadow: 0 12px 35px #02050daa;
+}
+.share-image-status {
+  color: #e3a29a;
 }
 .empty-block {
   border-color: #66728c55;
@@ -1549,32 +1562,35 @@ dialog p {
 }
 @media print {
   :root {
-    color-scheme: light;
-    --text: #20283b;
-    --muted: #596274;
-    --line: #c0c5cf;
-    --green: #6e5527;
-    --accent: #6e5527;
+    color-scheme: dark;
+    --text: #f1e8d5;
+    --muted: #a8b4c9;
+    --line: #465675;
+    --green: #d8b774;
+    --accent: #d8b774;
   }
   body {
-    background: white !important;
-    color: #20283b;
+    background: #070d1f !important;
+    color: #f1e8d5;
   }
   .sheet {
-    background: white !important;
-    color: #20283b;
+    background: #0d1830 !important;
+    color: #f1e8d5;
     box-shadow: none;
     border: 0;
+    print-color-adjust: exact;
   }
   .sheet-head {
-    background: #f1eee5 !important;
-    border-color: #c5b995;
+    background:
+      linear-gradient(120deg, #263551e8, #101a30f2),
+      url('../assets/nebula.jpg') center 30% / cover !important;
+    border-color: #9f8657;
     print-color-adjust: exact;
   }
   .sheet-head h2,
   .sheet-card strong,
   .sheet-match strong {
-    color: #20283b;
+    color: #f2ead8;
   }
   .sheet-head h2,
   .read-layout .sheet-head h2 {
@@ -1582,34 +1598,47 @@ dialog p {
   }
   .sheet-head p,
   .sheet-section p {
-    color: #4c5669;
+    color: #b4bfd2;
   }
   .sheet-running,
   .sheet-section h3,
   .sheet-footer {
-    color: #776136;
-    border-color: #c2b597;
+    color: #d8b774;
+    border-color: #7f6b46;
   }
   .sheet-match {
-    background: #edf1e6;
+    background: #1b2d2a !important;
   }
   .sheet-match.bad {
-    background: #f8eee6;
+    background: #332126 !important;
   }
   .ink-dot {
-    background: #f8f5ed;
-    color: #34435b;
-    border-color: #bbc0ca;
+    background: #111d36;
+    color: #e6ebf4;
+    border-color: #596b89;
   }
   .tag,
   .sheet-pill {
-    color: #776136;
-    border-color: #c2b597;
-    background: transparent;
+    color: #e4c990;
+    border-color: #8f784c;
+    background: #111d36;
   }
-  .read-layout .sheet-head,
-  .read-layout .sheet-body {
-    padding: 25px 35px;
+  .sheet .decklist-card-visual {
+    background: #0a1428;
+    border-color: #596b89;
+    box-shadow: none;
+  }
+  .sheet .decklist-quantity {
+    color: #10182c;
+    background: #e6c98f;
+    border-color: #f8e8bd;
+  }
+  .sheet .decklist-card-fallback,
+  .sheet .decklist-card figcaption strong {
+    color: #edf1f8;
+  }
+  .sheet .decklist-card figcaption small {
+    color: #9eabc1;
   }
   .sheet-section {
     break-inside: avoid;

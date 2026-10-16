@@ -4,7 +4,7 @@ import { decklistGallery } from './decklist-gallery.js';
 export function sheet(d) {
   const cards = (k, title) =>
     d[k].length
-      ? /* HTML */ `<section class="sheet-section">
+      ? /* HTML */ `<section class="sheet-section sheet-card-list">
           <h3>${title}</h3>
           ${d[k]
             .map(

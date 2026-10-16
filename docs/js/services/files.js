@@ -1,5 +1,9 @@
 export function downloadText(text, filename, type = 'application/json') {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+  downloadBlob(new Blob([text], { type }), filename);
+}
+
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;

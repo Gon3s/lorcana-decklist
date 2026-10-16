@@ -2,9 +2,11 @@ import { decodeDeckExport, encodeDeckExport } from '../core/decks.js';
 import { normalize, uid } from '../core/utils.js';
 import { loadDecks, saveDecks } from '../services/deck-store.js';
 import { downloadText, readJSONFile } from '../services/files.js';
+import { createShareImage, shareImageFilename } from '../services/share-image.js';
 import { collectionPage, deckGrid } from '../ui/collection.js';
 import { confirmAction } from '../ui/dialog.js';
 import { sheet } from '../ui/sheet.js';
+import { openShareImageDialog } from '../ui/share-image-dialog.js';
 
 export function createDeckController({ state, app, query, toast, setNavigation, editor }) {
   const $ = query;
@@ -78,6 +80,7 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
       <div class="actions"><button class="btn small" data-action="duplicate">Dupliquer</button>
         <button class="btn small" data-action="export">Exporter JSON</button>
         <button class="btn small" data-action="print">Imprimer / PDF</button>
+        <button class="btn small" data-action="share-image">Image à partager</button>
         <button class="btn small" data-action="delete">Supprimer</button>
         <button class="btn primary small" data-action="edit-current">Modifier</button></div></div>
       <div class="read-layout">${sheet(deck)}</div>`;
@@ -121,7 +124,29 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
       case 'print':
         return (async () => {
           await document.fonts?.ready;
+          const images = [...document.querySelectorAll('.sheet img')];
+          images.forEach((image) => (image.loading = 'eager'));
+          await Promise.race([
+            Promise.all(
+              images.map((image) =>
+                image.complete
+                  ? image.decode?.().catch(() => {})
+                  : new Promise((resolve) => {
+                      image.addEventListener('load', resolve, { once: true });
+                      image.addEventListener('error', resolve, { once: true });
+                    }),
+              ),
+            ),
+            new Promise((resolve) => setTimeout(resolve, 5000)),
+          ]);
           window.print();
+        })();
+      case 'share-image':
+        return (async () => {
+          toast('Création de l’image en cours…');
+          const blob = await createShareImage(state.current);
+          openShareImageDialog(blob, shareImageFilename(state.current));
+          toast('Image prête à partager.');
         })();
       case 'duplicate': {
         const copy = structuredClone(state.current);

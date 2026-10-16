@@ -4,11 +4,13 @@ Application statique française pour écrire, sauvegarder et partager des guides
 
 ## Utilisation
 
-- **Mes fiches** : créer, consulter, dupliquer, filtrer, importer/exporter une fiche et imprimer en PDF.
+- **Mes fiches** : créer, consulter, dupliquer, filtrer, importer/exporter une fiche, imprimer un PDF sombre et générer une image PNG à partager.
 - **Création** : donner un nom au deck puis coller une decklist exportée depuis Duels.ink. Grimoire rapproche chaque ligne avec le catalogue français grâce au code d’impression, déduit les encres et propose les cartes du deck pour les rubriques Cartes clés et Core.
 - **Éditeur → Cartes** : chercher par nom ou texte, filtrer par encre, type, coût, extension et encres du deck ; choisir Cartes clés, Core ou Techs et ajouter une carte. Quantités et commentaires restent propres à chaque rubrique. Une carte ne se répète pas deux fois dans une même rubrique.
 
 Les fiches restent dans le navigateur (`localStorage`, clé `grimoire-v2`). Elles ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Le catalogue français intégré sert uniquement au rapprochement des decklists et à la recherche de cartes dans l’éditeur.
+
+Depuis l’aperçu d’une fiche, l’image à partager reprend le nom, les encres, la decklist et les cartes stratégiques dans un format portrait 1080 × 1350. Elle peut être téléchargée ou transmise avec le partage natif du navigateur lorsque celui-ci accepte les fichiers.
 
 ### Importer une decklist Duels.ink
 

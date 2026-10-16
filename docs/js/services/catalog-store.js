@@ -1,11 +1,5 @@
 import { CATALOG_SNAPSHOT_URL } from '../core/constants.js';
-import {
-  normalizeCatalog,
-  withCard,
-  withoutCard,
-  upgradeLegacyPrintings,
-  needsPrintingUpgrade,
-} from '../core/catalog.js';
+import { normalizeCatalog, upgradeLegacyPrintings, needsPrintingUpgrade } from '../core/catalog.js';
 
 /** One IndexedDB document; large catalogues don't consume the deck localStorage quota. */
 export function createCatalogCache(indexedDB = globalThis.indexedDB) {
@@ -59,7 +53,6 @@ export class CatalogRepository {
     this.cache = cache;
     this.fetcher = fetcher;
     this.document = null;
-    this.warning = '';
   }
   async fetchDocument(url, timeoutMs = 25000) {
     const controller = new AbortController();
@@ -87,33 +80,15 @@ export class CatalogRepository {
             await this.cache.write(upgraded);
             this.document = upgraded;
           } catch {
-            this.warning =
-              'Catalogue conservé. Les anciennes impressions n’ont pas pu être actualisées. Réessayez lors de votre prochaine visite.';
+            // Keep the compatible cached data when the bundled reference is unavailable.
           }
         }
         return this.document;
       }
     } catch {
-      this.warning = 'Le cache local est indisponible. Le catalogue intégré reste consultable.';
+      // Fall back to the bundled snapshot when IndexedDB is unavailable.
     }
     this.document = await this.fetchDocument(CATALOG_SNAPSHOT_URL);
     return this.document;
-  }
-  async commit(document) {
-    const valid = normalizeCatalog(document);
-    // A failed write must not make the interface claim that edits were saved.
-    await this.cache.write(valid);
-    this.document = valid;
-    this.warning = '';
-    return valid;
-  }
-  async import(raw) {
-    return this.commit(normalizeCatalog(raw));
-  }
-  async upsert(card) {
-    return this.commit(withCard(this.document, card));
-  }
-  async remove(id) {
-    return this.commit(withoutCard(this.document, id));
   }
 }

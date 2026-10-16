@@ -55,24 +55,10 @@ function input(selector, value, event = 'input') {
 await import('../docs/app.js');
 await new Promise((resolve) => setImmediate(resolve));
 
-test('DOM integration: catalogue search, key/core selection and v2 persistence', async () => {
+test('DOM integration: deck creation, card selection and v2 persistence', async () => {
   assert.ok($('.hero'));
-  assert.ok($('#nav-catalog'));
-  click('#nav-catalog');
-  assert.ok($('.catalog-heading'));
-  assert.equal($('.catalog-management'), null);
-  assert.equal(window.location.hash, '#/catalogue');
-  assert.equal($$('.catalog-card').length, 24);
-  input('#card-search', 'merlin');
-  assert.equal(new URLSearchParams(window.location.hash.split('?')[1]).get('query'), 'merlin');
-  assert.ok($$('.catalog-card').length > 0);
-  assert.ok(
-    $$('.catalog-card h3').every((element) => element.textContent.toLowerCase().includes('merlin')),
-  );
-  click('[data-card-preview]');
-  assert.ok($('.card-detail'));
-  click('[data-close-dialog]');
-  click('[data-action="home"]');
+  assert.equal($('#nav-catalog'), null);
+  assert.equal($('#catalog-import-file'), null);
   const storedDeckCount = JSON.parse(localStorage.getItem('grimoire-v2') || '[]').length;
   assert.equal(storedDeckCount, 0);
   const deckCount = Number.parseInt($('#count').textContent, 10);
@@ -102,7 +88,6 @@ test('DOM integration: catalogue search, key/core selection and v2 persistence',
   assert.ok($('.decklist-overview').textContent.includes('60 cartes'));
   assert.equal(JSON.parse(localStorage.getItem('grimoire-v2')).length, deckCount + 1);
   assert.equal($('#image-file'), null);
-  assert.equal($('.catalog-browser'), null);
   click('[data-pick-section="keys"]');
   assert.ok($('.card-picker-dialog'));
   assert.equal($('[data-picker-filter="deckOnly"]').checked, true);
@@ -177,25 +162,14 @@ test('DOM integration: catalogue search, key/core selection and v2 persistence',
   assert.ok($('.sheet').textContent.includes('Chercher une courbe jouable'));
   click('[data-action="home"]');
   assert.ok($('#grid').textContent.includes('Test de non-régression'));
-  click('#nav-catalog');
-  assert.equal($$('[data-catalog-ink].selected').length, 0);
-  assert.equal($('#card-search').value, '');
-  assert.equal($$('.catalog-card').length, 24);
-  window.history.pushState(null, '', '#/catalogue?query=merlin&inks=amethyst&page=2');
+  window.history.pushState(null, '', '#/catalogue');
   window.dispatchEvent(new window.PopStateEvent('popstate'));
-  assert.equal($('#card-search').value, 'merlin');
-  assert.equal($$('[data-catalog-ink].selected').length, 1);
+  assert.ok($('#grid'));
+  assert.equal(window.location.hash, '#/fiches');
   window.history.pushState(null, '', '#/modifier/' + stored.id + '/cards');
   window.dispatchEvent(new window.PopStateEvent('popstate'));
   assert.ok($('#selected-card-sections'));
   assert.equal($$('#section-core .selected-card').length, 2);
-  window.history.back();
-  await new Promise((resolve) => nativeSetTimeout(resolve, 30));
-  assert.ok($('.catalog-heading'));
-  assert.equal($('#card-search').value, 'merlin');
-  window.history.forward();
-  await new Promise((resolve) => nativeSetTimeout(resolve, 30));
-  assert.ok($('#selected-card-sections'));
   window.history.pushState(null, '', '#/fiche/missing');
   window.dispatchEvent(new window.PopStateEvent('popstate'));
   assert.ok($('#grid'));

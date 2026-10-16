@@ -179,7 +179,7 @@ export function cardSections(deck) {
                     <div class="selected-card-fields">
                       <div class="row-head">
                         <span class="muted"
-                          >${card.id ? 'Catalogue' : 'Carte libre'} ${index + 1}</span
+                          >${card.id ? 'Carte importée' : 'Carte libre'} ${index + 1}</span
                         >${rowTools(deck, section, index)}
                       </div>
                       <div class="row-fields">
@@ -217,7 +217,7 @@ ${esc(card.note)}</textarea>
                   </div>`,
               )
               .join('') ||
-            '<div class="empty-block">Choisissez une carte dans le catalogue ou ajoutez une entrée libre.</div>'
+            '<div class="empty-block">Recherchez une carte ou ajoutez une entrée libre.</div>'
           }
         </section>`,
     )
@@ -241,7 +241,7 @@ export function cardsForm(deck) {
           .join('')}
       </div>
     </section>
-    <h3 class="catalog-editor-title">Vos cartes, leurs rôles.</h3>
+    <h3 class="card-editor-title">Vos cartes, leurs rôles.</h3>
     <p class="field-help">
       Ouvrez la recherche depuis la rubrique voulue, sélectionnez plusieurs cartes puis validez. Une
       carte peut appartenir à plusieurs rubriques.

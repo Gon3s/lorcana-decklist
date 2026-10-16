@@ -7,8 +7,6 @@ import {
   effectiveCards,
   createCardIndex,
   searchCatalog,
-  withCard,
-  withoutCard,
 } from '../docs/js/core/catalog.js';
 import { CatalogRepository } from '../docs/js/services/catalog-store.js';
 
@@ -137,50 +135,17 @@ test('paging clamps invalid pages and sorting is deterministic', () => {
   assert.equal(last.cards.length, 5);
   assert.equal(searchCatalog(index, { query: 'no match', page: 99 }).page, 1);
 });
-test('edits, manual cards and hidden cards survive export and import', () => {
-  let doc = document();
-  doc = withCard(doc, card('a', { name: 'Correction' }));
-  doc = withCard(doc, card('custom-1'));
-  doc = withoutCard(doc, 'b');
-  const imported = normalizeCatalog(JSON.parse(JSON.stringify(doc)));
+test('legacy custom, corrected and hidden cards remain readable', () => {
+  const imported = normalizeCatalog({
+    ...document(),
+    custom: [card('custom-1')],
+    overrides: { a: card('a', { name: 'Correction' }) },
+    hidden: ['b'],
+  });
   assert.deepEqual(
     effectiveCards(imported).map((c) => c.name),
     ['Correction', 'Carte c', 'Carte custom-1'],
   );
-});
-test('invalid catalogue import is rejected atomically', async () => {
-  let saved = document();
-  const repo = new CatalogRepository({
-    cache: {
-      read: async () => saved,
-      write: async (value) => {
-        saved = value;
-      },
-    },
-    fetcher: async () => {
-      throw Error('no');
-    },
-  });
-  await repo.load();
-  await assert.rejects(() => repo.import({ cards: [card('bad', { inks: ['unknown'] })] }));
-  assert.equal(repo.document.cards.length, 3);
-  assert.equal(saved.cards.length, 3);
-});
-test('a failed cache write never changes the active catalogue', async () => {
-  const repo = new CatalogRepository({
-    cache: {
-      read: async () => document(),
-      write: async () => {
-        throw Error('quota');
-      },
-    },
-    fetcher: async () => {
-      throw Error('no');
-    },
-  });
-  await repo.load();
-  await assert.rejects(() => repo.upsert(card('new')), /quota/);
-  assert.equal(effectiveCards(repo.document).length, 3);
 });
 test('bundled catalogue has names, images, rules text, valid types and inks', async () => {
   const doc = normalizeCatalog(
@@ -197,18 +162,13 @@ test('bundled catalogue has names, images, rules text, valid types and inks', as
     assert.ok(printings.some((printing) => printing.code === code));
 });
 
-test('IndexedDB catalogue cache persists across repository instances', async () => {
+test('IndexedDB catalogue cache remains readable', async () => {
   const { IDBFactory } = await import('fake-indexeddb');
   const { createCatalogCache } = await import('../docs/js/services/catalog-store.js');
   const database = new IDBFactory();
   const cache = createCatalogCache(database);
   assert.equal(await cache.read(), undefined);
-  const repo = new CatalogRepository({
-    cache,
-    fetcher: async () => ({ ok: true, json: async () => document() }),
-  });
-  await repo.load();
-  await repo.upsert(card('custom-persisted'));
+  await cache.write(normalizeCatalog({ ...document(), custom: [card('custom-persisted')] }));
   const reloaded = new CatalogRepository({
     cache: createCatalogCache(database),
     fetcher: async () => {
@@ -323,7 +283,6 @@ test('an offline legacy migration keeps the cached collection available', async 
   });
   await repo.load();
   assert.equal(repo.document.cards[0].id, 'legacy');
-  assert.ok(repo.warning.includes('Catalogue conservé'));
 });
 
 test('verified collector numbering in a cache never triggers a migration fetch', async () => {

@@ -1,8 +1,8 @@
 import { parseRoute, routeHash } from './js/core/routes.js';
 import {
-  createCatalogController,
-  createCatalogFilters,
-} from './js/controllers/catalog-controller.js';
+  createCardFilters,
+  createCardPickerController,
+} from './js/controllers/card-picker-controller.js';
 import { createDeckController } from './js/controllers/deck-controller.js';
 import { createEditorController } from './js/controllers/editor-controller.js';
 import { createCreationController } from './js/controllers/creation-controller.js';
@@ -20,10 +20,8 @@ const state = {
   catalog: null,
   cards: [],
   index: [],
-  filters: createCatalogFilters(),
+  filters: createCardFilters(),
   target: 'keys',
-  catalogBusy: false,
-  catalogWarning: '',
   cardSelection: [],
   creationStep: 1,
   creationInput: '',
@@ -34,13 +32,10 @@ let toastTimer;
 let restoringRoute = false;
 let deck;
 
-const catalog = createCatalogController({
+const cardPicker = createCardPickerController({
   state,
-  app,
   query: $,
   toast,
-  syncRoute,
-  setNavigation,
   save: () => deck.save(),
   renderForm: () => editor.renderForm(),
 });
@@ -79,8 +74,7 @@ function syncRoute(replace = false) {
 
 function setNavigation() {
   syncRoute();
-  $('#nav-library').classList.toggle('active', state.mode !== 'catalog');
-  $('#nav-catalog').classList.toggle('active', state.mode === 'catalog');
+  $('#nav-library').classList.add('active');
 }
 
 function restoreRoute() {
@@ -89,11 +83,7 @@ function restoreRoute() {
   const route = parseRoute(window.location.hash);
   restoringRoute = true;
   try {
-    if (route.mode === 'catalog') {
-      state.current = null;
-      state.filters = { ...createCatalogFilters(), ...route.filters };
-      catalog.renderCatalog();
-    } else if (route.mode === 'edit' || route.mode === 'read') {
+    if (route.mode === 'edit' || route.mode === 'read') {
       const selected = state.decks.find((item) => item.id === route.id);
       if (!selected) {
         deck.library();
@@ -117,21 +107,17 @@ window.addEventListener('popstate', restoreRoute);
 window.addEventListener('hashchange', restoreRoute);
 
 app.addEventListener('input', (event) => {
-  if (!catalog.handleFilter(event) && !creation.handleInput(event)) editor.handleInput(event);
+  if (!creation.handleInput(event)) editor.handleInput(event);
 });
 app.addEventListener('change', (event) => {
-  if (!catalog.handleFilter(event)) editor.handleChange(event);
+  editor.handleChange(event);
 });
 app.addEventListener('click', async (event) => {
   const button = event.target.closest('button,[data-action]');
   if (!button || button.disabled) return;
   try {
-    const catalogClick = catalog.handleClick(button.dataset);
-    if (catalogClick) {
-      await catalogClick;
-      return;
-    }
     if (
+      cardPicker.handleClick(button.dataset) ||
       editor.handleClick(button.dataset) ||
       creation.handleClick(button.dataset) ||
       deck.handleClick(button.dataset)
@@ -148,11 +134,6 @@ app.addEventListener('keydown', (event) => {
 });
 
 async function handleAction(action, id) {
-  const catalogAction = catalog.handleAction(action);
-  if (catalogAction) {
-    await catalogAction;
-    return;
-  }
   const creationAction = creation.handleAction(action);
   if (creationAction) {
     await creationAction;
@@ -163,14 +144,12 @@ async function handleAction(action, id) {
 }
 
 $('#nav-library').onclick = () => handleAction('home');
-$('#nav-catalog').onclick = () => handleAction('catalog-manage');
 $('.brand').onclick = (event) => {
   event.preventDefault();
   handleAction('home');
 };
 
 deck.bindImport();
-catalog.bindImportInput($('#catalog-import-file'));
 deck.loadInitial();
 restoreRoute();
-catalog.load();
+cardPicker.load();

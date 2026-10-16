@@ -116,7 +116,7 @@ export function normalizeCard(value, fallbackType = '') {
   };
 }
 
-/** Accept our export format and the official Ravensburger French catalogue. */
+/** Accept the bundled catalogue and legacy locally saved catalogue documents. */
 export function normalizeCatalog(raw) {
   if (!raw || typeof raw !== 'object' || !raw.cards)
     throw new Error('Catalogue invalide : champ cards manquant.');
@@ -230,26 +230,6 @@ export function searchCatalog(index, filters = {}) {
     page,
   };
 }
-export function withCard(document, rawCard) {
-  const card = normalizeCard(rawCard);
-  const next = structuredClone(document);
-  if (next.cards.some((item) => item.id === card.id)) next.overrides[card.id] = card;
-  else {
-    const index = next.custom.findIndex((item) => item.id === card.id);
-    if (index >= 0) next.custom[index] = card;
-    else next.custom.push(card);
-  }
-  next.hidden = next.hidden.filter((id) => id !== card.id);
-  return next;
-}
-export function withoutCard(document, id) {
-  const next = structuredClone(document);
-  next.custom = next.custom.filter((card) => card.id !== id);
-  delete next.overrides[id];
-  if (next.cards.some((card) => card.id === id) && !next.hidden.includes(id)) next.hidden.push(id);
-  return next;
-}
-
 /** Main expansions first, newest first; then quest/promo families in natural order. */
 function compareSets(left, right) {
   const priority = (set) =>

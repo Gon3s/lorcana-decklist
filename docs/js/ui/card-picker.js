@@ -9,7 +9,7 @@ const PICKER_TITLES = Object.freeze({
   tech: 'Ajouter aux techs et cartes potentielles',
 });
 
-function catalogSets(document) {
+function availableSets(document) {
   const sets = new Map(document.sets.map((set) => [String(set.id), String(set.name)]));
   for (const card of [...document.cards, ...document.custom])
     for (const set of card.set) if (!sets.has(set)) sets.set(set, set);
@@ -63,9 +63,9 @@ export function cardPicker({ document, filters, target, deck, filtersOpen = fals
       <button type="button" class="text-button" data-picker-clear-filters>Réinitialiser</button>
     </div>
     <div id="card-picker-filters" class="card-picker-filters" ${filtersOpen ? '' : 'hidden'}>
-      <fieldset class="catalog-ink-filters">
+      <fieldset class="card-picker-ink-filters">
         <legend>Encres autorisées - sélection multiple</legend>
-        <div class="catalog-ink-buttons">
+        <div class="card-picker-ink-buttons">
           ${Object.entries(INKS)
             .map(
               ([ink, [name, color]]) =>
@@ -91,7 +91,7 @@ export function cardPicker({ document, filters, target, deck, filtersOpen = fals
       <div class="field">
         <label for="card-picker-set">Extension</label>
         <select id="card-picker-set" data-picker-filter="set">
-          ${selectOptions(catalogSets(document), filters.set, 'Toutes')}
+          ${selectOptions(availableSets(document), filters.set, 'Toutes')}
         </select>
       </div>
       <div class="field">
@@ -124,7 +124,7 @@ export function cardPicker({ document, filters, target, deck, filtersOpen = fals
     <div class="card-picker-layout">
       <div class="card-picker-list-panel">
         <div id="card-picker-results" class="card-picker-results" role="list"></div>
-        <div id="card-picker-pagination" class="catalog-pagination"></div>
+        <div id="card-picker-pagination" class="card-picker-pagination"></div>
       </div>
       <div id="card-picker-preview" class="card-picker-preview"></div>
     </div>

@@ -32,14 +32,7 @@ const catalog = normalizeCatalog(JSON.parse(await readFile('docs/assets/catalog.
 for (const ink of ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'])
   await access('docs/assets/inks/' + ink + '.png');
 const html = await readFile('docs/index.html', 'utf8');
-for (const id of [
-  'app',
-  'nav-library',
-  'nav-catalog',
-  'import-file',
-  'catalog-import-file',
-  'toast',
-])
+for (const id of ['app', 'nav-library', 'import-file', 'toast'])
   if (!html.includes('id="' + id + '"')) throw Error('Missing mount ' + id);
 console.log(
   `${sources.length} modules checked; all local imports, stylesheets, ink assets and ${catalog.cards.length} catalogue records are valid.`,

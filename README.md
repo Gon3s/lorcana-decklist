@@ -7,10 +7,8 @@ Application statique française pour écrire, sauvegarder et partager des guides
 - **Mes fiches** : créer, consulter, dupliquer, filtrer, importer/exporter une fiche et imprimer en PDF.
 - **Création** : donner un nom au deck puis coller une decklist exportée depuis Duels.ink. Grimoire rapproche chaque ligne avec le catalogue français grâce au code d’impression, déduit les encres et propose les cartes du deck pour les rubriques Cartes clés et Core.
 - **Éditeur → Cartes** : chercher par nom ou texte, filtrer par encre, type, coût, extension et encres du deck ; choisir Cartes clés, Core ou Techs et ajouter une carte. Quantités et commentaires restent propres à chaque rubrique. Une carte ne se répète pas deux fois dans une même rubrique.
-- **Catalogue** : consulter les illustrations et règles, importer/exporter le catalogue JSON, ajouter/corriger une carte ou la masquer.
-- Un import remplace le catalogue local après validation et confirmation.
 
-Les fiches restent dans le navigateur (`localStorage`, clé `grimoire-v2`). Le catalogue personnalisé utilise **IndexedDB**, séparément des fiches. Ces données ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Les cartes enregistrées dans les fiches sont des copies ; modifier le catalogue ne réécrit pas les fiches existantes.
+Les fiches restent dans le navigateur (`localStorage`, clé `grimoire-v2`). Elles ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Le catalogue français intégré sert uniquement au rapprochement des decklists et à la recherche de cartes dans l’éditeur.
 
 ### Importer une decklist Duels.ink
 
@@ -24,9 +22,9 @@ Chaque ligne doit contenir une quantité, le nom exporté et le code d’impress
 
 Le nom peut être en anglais : il sert à la relecture, mais pas au rapprochement. `14-171` désigne une impression standard ; `13-D23-12` et `9-C2-1` conservent respectivement les promos D23 et C2 ainsi que leur illustration. Une ligne inconnue ou ambiguë est signalée et doit être corrigée avant la création. La decklist doit contenir au moins 60 cartes et utiliser une ou deux encres.
 
-La decklist textuelle est obligatoire et enregistrée dans la fiche. Le lien d’origine est facultatif. Pendant la création, Cartes clés et Core se choisissent uniquement parmi les cartes rapprochées ; la recherche catalogue reste disponible ensuite dans l’éditeur.
+La decklist textuelle est obligatoire et enregistrée dans la fiche. Le lien d’origine est facultatif. Pendant la création, Cartes clés et Core se choisissent uniquement parmi les cartes rapprochées ; la recherche de cartes reste disponible ensuite dans l’éditeur.
 
-Le site utilise le catalogue intégré au dépôt. Sa mise à jour depuis Ravensburger se fait uniquement en développement, avec le script décrit plus bas. Vous pouvez importer un export JSON normalisé ou le catalogue officiel français brut. Une écriture échouée conserve le catalogue actif et affiche une erreur.
+Le site utilise le catalogue intégré au dépôt. Sa mise à jour depuis Ravensburger se fait uniquement en développement, avec le script décrit plus bas.
 
 ## Développement
 
@@ -52,11 +50,11 @@ npm run build         # publication statique dans _site/
 | `docs/app.js`          | Composition de l'application, navigation et orchestration des fiches                                      |
 | `docs/js/controllers/` | Contrôleurs de fonctionnalités ; coordination de l'état, des services et des vues                         |
 | `docs/js/core/`        | Modèles, validation, parsing Duels.ink, rapprochement, recherche et règles métier ; aucun DOM ni stockage |
-| `docs/js/services/`    | Persistance des fiches, cache IndexedDB du catalogue, requêtes réseau et fichiers                         |
+| `docs/js/services/`    | Persistance des fiches, lecture du catalogue intégré, requêtes réseau et fichiers                         |
 | `docs/js/ui/`          | Fonctions de rendu HTML ; état fourni en argument et valeurs échappées                                    |
 | `docs/css/layout.css`  | Géométrie et composants de base                                                                           |
 | `docs/css/theme.css`   | Identité visuelle Lorcana, responsive et impression                                                       |
-| `docs/css/catalog.css` | Catalogue, sélecteur de cartes et dialogues                                                               |
+| `docs/css/cards.css`   | Édition, recherche et sélection de cartes                                                                 |
 | `tests/`               | Tests Node, persistance IndexedDB simulée et parcours DOM Happy DOM                                       |
 | `scripts/`             | Vérification, construction et actualisation du catalogue intégré                                          |
 
@@ -65,12 +63,11 @@ Les vues ne font pas de requête réseau. Les services ne manipulent pas le DOM.
 ## Données
 
 - Les exports de fiches utilisent `schemaVersion: 2`. La `decklist` rapprochée, avec quantité, code d’impression et encres, est obligatoire. Les anciens exports et l’ancien stockage ne sont pas pris en charge.
-- Catalogue `schemaVersion: 1` : `cards` officielles, `custom` ajoutées, `overrides` indexées par identifiant, `hidden` pour les cartes masquées, `sets`, `source`, `updated`.
+- Catalogue `schemaVersion: 1` : `cards` officielles, `sets`, `source` et `updated`. Les anciens champs locaux `custom`, `overrides` et `hidden` restent lus pour préserver les données déjà en cache.
 - Le normaliseur accepte aussi la réponse officielle Ravensburger (`cards` groupées par type), regroupe les extensions d’une même identité et conserve pour chaque impression son code Duels.ink et son illustration, promos comprises.
 - Les cartes spéciales de quête sans encre sont consultables ; le filtre « Encres du deck uniquement » les exclut.
-- La suppression d’une carte du catalogue ne supprime jamais les copies utilisées dans les fiches.
 
-Pour actualiser le catalogue **intégré au dépôt**, séparément du catalogue local des visiteurs :
+Pour actualiser le catalogue intégré au dépôt :
 
 ```sh
 npm run catalog:update
@@ -101,8 +98,8 @@ Voir [ASSETS.md](ASSETS.md) pour les sources. Projet de fans indépendant. Disne
 - Tri initial : extension principale la plus récente, puis numéro de collection croissant. Lorsqu’une extension est filtrée, son numéro de réimpression est utilisé.
 - Oxlint assure le linting ; Oxfmt assure le formatage. Les deux sont exécutés dans GitHub Actions.
 
-Les anciens catalogues en cache reçoivent automatiquement les numéros, codes et illustrations d’impression manquants depuis le catalogue intégré. Les corrections, ajouts et cartes masquées sont conservés. Si cette opération échoue, le catalogue en cache reste disponible. Décocher le filtre des encres du deck retire le filtrage automatique ; ouvrir la gestion du catalogue réinitialise les filtres du sélecteur.
+Les anciens catalogues en cache reçoivent automatiquement les numéros, codes et illustrations d’impression manquants depuis le catalogue intégré. Les anciennes corrections, ajouts et cartes masquées restent lisibles. Si cette opération échoue, le catalogue en cache reste disponible. Décocher le filtre des encres du deck retire le filtrage automatique.
 
 ## Liens directs
 
-La navigation utilise des routes avec fragment, compatibles avec GitHub Pages : `#/fiches`, `#/catalogue`, `#/fiche/identifiant` et `#/modifier/identifiant/cards`. Le catalogue conserve dans l’URL la recherche, les filtres et la pagination. Ces liens peuvent être copiés et ouverts directement, et les boutons précédent/suivant du navigateur restaurent la page. Les fiches restent locales : leur URL nécessite la fiche enregistrée dans ce navigateur. Pour transmettre leur contenu à une autre personne, utiliser l’export et l’import JSON.
+La navigation utilise des routes avec fragment, compatibles avec GitHub Pages : `#/fiches`, `#/fiche/identifiant` et `#/modifier/identifiant/cards`. Ces liens peuvent être copiés et ouverts directement, et les boutons précédent/suivant du navigateur restaurent la page. Les fiches restent locales : leur URL nécessite la fiche enregistrée dans ce navigateur. Pour transmettre leur contenu à une autre personne, utiliser l’export et l’import JSON.

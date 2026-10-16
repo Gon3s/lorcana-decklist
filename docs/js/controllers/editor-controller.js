@@ -1,7 +1,7 @@
 import { moveRow, toggleInk } from '../core/decks.js';
 import { quantity, cleanText } from '../core/utils.js';
 import { editorPage, identityForm, matchupsForm, strategyForm, cardsForm } from '../ui/editor.js';
-import { createCatalogFilters } from './catalog-controller.js';
+import { createCardFilters } from './card-picker-controller.js';
 
 export function createEditorController({ state, app, query, setNavigation, save }) {
   const $ = query;
@@ -12,7 +12,7 @@ export function createEditorController({ state, app, query, setNavigation, save 
     state.mode = 'edit';
     state.tab = 'identity';
     state.cardSelection = [];
-    state.filters = { ...createCatalogFilters(), deckOnly: true, inks: [...deck.inks] };
+    state.filters = { ...createCardFilters(), deckOnly: true, inks: [...deck.inks] };
     renderEditor();
     window.scrollTo(0, 0);
   }

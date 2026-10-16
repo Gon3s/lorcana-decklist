@@ -1,5 +1,6 @@
 import { esc, inksHTML, colors } from './html.js';
 import { safeURL } from '../core/utils.js';
+import { decklistGallery } from './decklist-gallery.js';
 export function sheet(d) {
   const cards = (k, title) =>
     d[k].length
@@ -24,17 +25,7 @@ export function sheet(d) {
   const decklist = () => {
     return /* HTML */ `<section class="sheet-section">
       <h3>La decklist</h3>
-      <div class="sheet-decklist">
-        ${d.decklist
-          .map(
-            (card) =>
-              /* HTML */ `<div>
-                <strong><span class="sheet-pill">${esc(card.qty)}×</span>${esc(card.name)}</strong>
-                <small>${esc(card.printingCode)}</small>
-              </div>`,
-          )
-          .join('')}
-      </div>
+      ${decklistGallery(d.decklist)}
     </section>`;
   };
   return /* HTML */ `<article class="sheet" style="${colors(d)}">

@@ -1,6 +1,7 @@
 import { TABS, CARD_SECTIONS } from '../core/constants.js';
 import { esc, inkOptions, inksHTML } from './html.js';
 import { safeURL } from '../core/utils.js';
+import { decklistGallery } from './decklist-gallery.js';
 function field(current, label, key, placeholder = '', area = false) {
   return /* HTML */ `<div class="field"><label for="f-${key}">${label}</label><${area ? 'textarea' : 'input'} id="f-${key}" data-field="${key}" placeholder="${esc(placeholder)}" ${area ? '' : 'value="' + esc(current[key]) + '"'}>${area ? esc(current[key]) : ''}${area ? '</textarea>' : ''}</div>`;
 }
@@ -142,20 +143,52 @@ export function editorPage(deck, tab) {
     </div>
     <h1 class="workspace-title">${deck.name ? 'Éditer votre fiche' : 'Une nouvelle stratégie.'}</h1>
     <section class="editor-panel">
-      <div class="tabs" aria-label="Rubriques de la fiche">
+      <div class="tabs" id="editor-tabs" role="tablist" aria-label="Rubriques de la fiche">
         ${TABS.map(
-          ([id, label]) =>
+          ([id, label], index) =>
             /* HTML */ ` <button
+              id="tab-${id}"
+              type="button"
+              role="tab"
               class="tab ${tab === id ? 'active' : ''}"
               data-tab="${id}"
-              aria-pressed="${tab === id}"
+              aria-selected="${tab === id}"
+              aria-controls="form"
+              tabindex="${tab === id ? '0' : '-1'}"
             >
-              ${label}
+              <span class="tab-index">0${index + 1}</span>${label}
             </button>`,
         ).join('')}
       </div>
-      <div class="form-body" id="form"></div>
+      <div class="form-body" id="form" role="tabpanel" aria-labelledby="tab-${tab}"></div>
     </section>`;
+}
+
+export function editorTabNavigation(tab) {
+  const index = TABS.findIndex(([id]) => id === tab);
+  const previous = TABS[index - 1];
+  const next = TABS[index + 1];
+  return /* HTML */ `<nav class="editor-tab-navigation" aria-label="Navigation entre les rubriques">
+    ${
+      previous
+        ? /* HTML */ `<button class="btn" type="button" data-tab="${previous[0]}" data-tab-reveal>
+            ← ${previous[1]}
+          </button>`
+        : '<span></span>'
+    }
+    ${
+      next
+        ? /* HTML */ `<button
+            class="btn primary"
+            type="button"
+            data-tab="${next[0]}"
+            data-tab-reveal
+          >
+            ${next[1]} →
+          </button>`
+        : '<span></span>'
+    }
+  </nav>`;
 }
 
 export function cardSections(deck) {
@@ -229,17 +262,7 @@ export function cardsForm(deck) {
         <h3>Decklist importée</h3>
         <span class="muted">${deck.decklist.reduce((sum, card) => sum + card.qty, 0)} cartes</span>
       </div>
-      <div class="decklist-overview-grid">
-        ${deck.decklist
-          .map(
-            (card) =>
-              /* HTML */ `<div>
-                <strong>${esc(card.qty)}× ${esc(card.name)}</strong>
-                <small>${esc(card.printingCode)}</small>
-              </div>`,
-          )
-          .join('')}
-      </div>
+      ${decklistGallery(deck.decklist)}
     </section>
     <h3 class="card-editor-title">Vos cartes, leurs rôles.</h3>
     <p class="field-help">

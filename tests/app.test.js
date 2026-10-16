@@ -80,12 +80,22 @@ test('DOM integration: deck creation, card selection and v2 persistence', async 
   click('[data-action="create-next"]');
   assert.equal($$('.creation-strategy-card').length, 18);
   const importedId = $('[data-create-section="keys"]').dataset.cardId;
+  const keyButton = $(`[data-create-section="keys"][data-card-id="${importedId}"]`);
   click(`[data-create-section="keys"][data-card-id="${importedId}"]`);
+  assert.equal(
+    $(`[data-create-section="keys"][data-card-id="${importedId}"]`),
+    keyButton,
+    'role selection must not rebuild the creation screen',
+  );
+  assert.equal($('[data-create-count="keys"]').textContent, '1');
   click(`[data-create-section="core"][data-card-id="${importedId}"]`);
   assert.equal($$('[data-create-section][aria-pressed="true"]').length, 2);
   click('[data-action="create-finish"]');
   assert.ok($('#selected-card-sections'));
   assert.ok($('.decklist-overview').textContent.includes('60 cartes'));
+  assert.equal($$('.decklist-overview .decklist-card').length, 18);
+  assert.equal($('.decklist-overview .decklist-quantity').textContent.trim(), '4×');
+  assert.ok($('.decklist-overview .decklist-card img'));
   assert.equal(JSON.parse(localStorage.getItem('grimoire-v2')).length, deckCount + 1);
   assert.equal($('#image-file'), null);
   click('[data-pick-section="keys"]');
@@ -155,11 +165,19 @@ test('DOM integration: deck creation, card selection and v2 persistence', async 
     stored.decklist.reduce((sum, card) => sum + card.qty, 0),
     60,
   );
+  const editorPanel = $('.editor-panel');
+  const cardsTab = $('[role="tab"][data-tab="cards"]');
+  cardsTab.focus();
+  cardsTab.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+  assert.equal($('[role="tab"][aria-selected="true"]').dataset.tab, 'matchups');
+  assert.equal(window.document.activeElement.dataset.tab, 'matchups');
   click('[data-tab="strategy"]');
+  assert.equal($('.editor-panel'), editorPanel, 'tab navigation must keep the editor shell stable');
   assert.equal(window.location.hash, '#/modifier/' + stored.id + '/strategy');
   input('#f-mulligan', 'Chercher une courbe jouable');
   click('[data-action="read-current"]');
   assert.ok($('.sheet').textContent.includes('Chercher une courbe jouable'));
+  assert.equal($$('.sheet .decklist-card').length, 18);
   click('[data-action="home"]');
   assert.ok($('#grid').textContent.includes('Test de non-régression'));
   window.history.pushState(null, '', '#/catalogue');

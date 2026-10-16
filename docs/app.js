@@ -129,6 +129,22 @@ app.addEventListener('click', async (event) => {
   }
 });
 app.addEventListener('keydown', (event) => {
+  if (event.target.matches('[role="tab"][data-tab]')) {
+    const tabs = [...document.querySelectorAll('[role="tab"][data-tab]')];
+    const current = tabs.indexOf(event.target);
+    const destinations = {
+      ArrowLeft: (current - 1 + tabs.length) % tabs.length,
+      ArrowRight: (current + 1) % tabs.length,
+      Home: 0,
+      End: tabs.length - 1,
+    };
+    if (Object.hasOwn(destinations, event.key)) {
+      event.preventDefault();
+      tabs[destinations[event.key]].focus();
+      tabs[destinations[event.key]].click();
+      return;
+    }
+  }
   if (event.key === 'Enter' && event.target.matches('[role="button"][data-action]'))
     event.target.click();
 });

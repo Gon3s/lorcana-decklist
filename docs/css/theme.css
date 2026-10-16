@@ -691,14 +691,24 @@ footer > span:first-child {
   background: #0c162b;
   border-bottom: 1px solid #42516e;
   gap: 18px;
+  box-shadow: 0 10px 22px #050b18cc;
 }
 .tab {
   color: #98abc9;
   font-size: 14px;
 }
+.tab-index {
+  color: #657a9d;
+}
 .tab.active {
   color: #e4c990;
   border-color: #d5b574;
+}
+.tab.active .tab-index {
+  color: #d5b574;
+}
+.editor-tab-navigation {
+  border-color: #3a4c69;
 }
 .form-body {
   padding: 27px;
@@ -746,6 +756,9 @@ footer > span:first-child {
 .creation-role-summary strong {
   color: #f0dfb8;
 }
+.creation-role-summary small {
+  color: #aebbd0;
+}
 .creation-review-stats .success {
   border-color: #63835e;
 }
@@ -771,6 +784,46 @@ footer > span:first-child {
   background: #d8b774;
   border-color: #f1d9a4;
   color: #17213b;
+}
+.decklist-card-visual {
+  background: #0a1428;
+  border: 1px solid #405372;
+  border-radius: 5px;
+  box-shadow: 0 5px 13px #02071288;
+}
+.decklist-card-fallback {
+  color: #aebbd0;
+}
+.decklist-quantity {
+  color: #111b31;
+  background: #ead08f;
+  border: 1px solid #fff0bd;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px #020712aa;
+}
+.decklist-card figcaption strong {
+  color: #dce3ee;
+}
+.decklist-card figcaption small {
+  color: #91a4c2;
+}
+.sheet .decklist-card-visual {
+  background: #e9e7dc;
+  border-color: #b4baa9;
+  box-shadow: 0 4px 10px #28352220;
+}
+.sheet .decklist-quantity {
+  color: #fcfaf3;
+  background: var(--green);
+  border-color: #fcfaf3;
+  box-shadow: 0 2px 7px #28352255;
+}
+.sheet .decklist-card-fallback,
+.sheet .decklist-card figcaption strong {
+  color: #374333;
+}
+.sheet .decklist-card figcaption small {
+  color: #67705e;
 }
 label {
   color: #d4ddeb;
@@ -1560,6 +1613,13 @@ dialog p {
   }
   .sheet-section {
     break-inside: avoid;
+  }
+  .decklist-card {
+    break-inside: avoid;
+  }
+  .decklist-card-visual,
+  .decklist-quantity {
+    print-color-adjust: exact;
   }
   .sheet-head:after {
     display: none;

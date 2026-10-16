@@ -736,9 +736,12 @@ footer > span:first-child {
 .editor-panel {
   border: 1px solid var(--line);
   background: #f8f6ee;
-  overflow: hidden;
+  overflow: visible;
 }
 .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   overflow: auto;
   gap: 15px;
@@ -747,12 +750,19 @@ footer > span:first-child {
   background: #eceee0;
 }
 .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 0;
   background: transparent;
   padding: 17px 3px;
   color: var(--muted);
   font-size: 14px;
   white-space: nowrap;
+}
+.tab-index {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 .tab.active {
   border-bottom: 2px solid var(--green);
@@ -761,6 +771,14 @@ footer > span:first-child {
 }
 .form-body {
   padding: 28px;
+}
+.editor-tab-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
 }
 .creation-steps {
   display: grid;
@@ -828,6 +846,10 @@ footer > span:first-child {
   display: block;
   margin-bottom: 3px;
   font-size: 18px;
+}
+.creation-role-summary small {
+  display: block;
+  font-size: 14px;
 }
 .creation-detected-inks {
   margin: -5px 0 18px;
@@ -950,6 +972,62 @@ label small {
   margin-bottom: 34px;
   padding-bottom: 28px;
   border-bottom: 1px solid var(--line);
+}
+.decklist-gallery {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 18px 13px;
+}
+.decklist-card {
+  min-width: 0;
+  margin: 0;
+}
+.decklist-card-visual {
+  position: relative;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+}
+.decklist-card-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.decklist-card-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+.decklist-quantity {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  min-width: 34px;
+  padding: 5px 7px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+.decklist-card figcaption {
+  margin-top: 8px;
+}
+.decklist-card figcaption strong,
+.decklist-card figcaption small {
+  display: block;
+  font-size: 14px;
+}
+.decklist-card figcaption strong {
+  line-height: 1.35;
+}
+.decklist-card figcaption small {
+  margin-top: 3px;
 }
 .decklist-overview-grid,
 .sheet-decklist {
@@ -1350,6 +1428,9 @@ dialog .actions {
   }
 }
 @media (max-width: 850px) {
+  .decklist-gallery {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
   .header-note {
     display: none;
   }
@@ -1411,6 +1492,14 @@ dialog .actions {
   }
 }
 @media (max-width: 560px) {
+  .decklist-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px 9px;
+  }
+  .decklist-quantity {
+    top: 5px;
+    left: 5px;
+  }
   header {
     height: 87px;
     padding: 0 6%;
@@ -1712,6 +1801,11 @@ dialog .actions {
   }
   .hero-art:hover .card-one {
     transform: translate(-70px, -6px) rotate(-21deg);
+  }
+}
+@media (max-width: 380px) {
+  .decklist-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (prefers-reduced-motion: reduce) {

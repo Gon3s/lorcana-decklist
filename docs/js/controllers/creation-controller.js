@@ -104,11 +104,23 @@ export function createCreationController({
     if (state.mode !== 'create' || !data.createSection || !data.cardId) return false;
     const card = uniqueDeckCards(state.current.decklist).find((row) => row.id === data.cardId);
     if (!card) return true;
-    toggleSectionCard(state.current, data.createSection, card);
-    renderCreation({ scroll: false });
-    document
-      .querySelector(`[data-create-section="${data.createSection}"][data-card-id="${data.cardId}"]`)
-      ?.focus();
+    const selected = toggleSectionCard(state.current, data.createSection, card);
+    const button = document.querySelector(
+      `[data-create-section="${data.createSection}"][data-card-id="${data.cardId}"]`,
+    );
+    button?.classList.toggle('selected', selected);
+    button?.setAttribute('aria-pressed', String(selected));
+    const count = state.current[data.createSection].length;
+    const countElement = document.querySelector(`[data-create-count="${data.createSection}"]`);
+    const labelElement = document.querySelector(
+      `[data-create-count-label="${data.createSection}"]`,
+    );
+    if (countElement) countElement.textContent = String(count);
+    if (labelElement)
+      labelElement.textContent =
+        data.createSection === 'keys'
+          ? `carte${count === 1 ? '' : 's'} clé${count === 1 ? '' : 's'}`
+          : `carte${count === 1 ? '' : 's'} core`;
     return true;
   }
 

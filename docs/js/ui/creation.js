@@ -153,12 +153,17 @@ function strategyStep(deck, error) {
       appartenir aux deux rubriques. Les notes et les techs restent modifiables ensuite.
     </p>
     <div class="creation-role-summary">
-      <span
-        ><strong>${deck.keys.length}</strong> carte${deck.keys.length === 1 ? '' : 's'}
-        clé${deck.keys.length === 1 ? '' : 's'}</span
+      <span data-create-summary="keys"
+        ><strong data-create-count="keys">${deck.keys.length}</strong
+        ><small data-create-count-label="keys"
+          >carte${deck.keys.length === 1 ? '' : 's'} clé${deck.keys.length === 1 ? '' : 's'}</small
+        ></span
       >
-      <span
-        ><strong>${deck.core.length}</strong> carte${deck.core.length === 1 ? '' : 's'} core</span
+      <span data-create-summary="core"
+        ><strong data-create-count="core">${deck.core.length}</strong
+        ><small data-create-count-label="core"
+          >carte${deck.core.length === 1 ? '' : 's'} core</small
+        ></span
       >
     </div>
     <ul class="creation-strategy-list">

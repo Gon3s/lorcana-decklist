@@ -1,6 +1,14 @@
 import { moveRow, toggleInk } from '../core/decks.js';
 import { quantity, cleanText } from '../core/utils.js';
-import { editorPage, identityForm, matchupsForm, strategyForm, cardsForm } from '../ui/editor.js';
+import { TABS } from '../core/constants.js';
+import {
+  editorPage,
+  editorTabNavigation,
+  identityForm,
+  matchupsForm,
+  strategyForm,
+  cardsForm,
+} from '../ui/editor.js';
 import { createCardFilters } from './card-picker-controller.js';
 
 export function createEditorController({ state, app, query, setNavigation, save }) {
@@ -31,8 +39,26 @@ export function createEditorController({ state, app, query, setNavigation, save 
       matchups: matchupsForm,
       strategy: strategyForm,
     };
-    $('#form').innerHTML =
-      state.tab === 'cards' ? cardsForm(state.current) : forms[state.tab](state.current);
+    const form = $('#form');
+    form.innerHTML =
+      (state.tab === 'cards' ? cardsForm(state.current) : forms[state.tab](state.current)) +
+      editorTabNavigation(state.tab);
+    form.setAttribute('aria-labelledby', `tab-${state.tab}`);
+  }
+
+  function selectTab(tab, reveal = false) {
+    if (!TABS.some(([id]) => id === tab)) return;
+    if (state.tab === 'cards' && tab !== 'cards') state.cardSelection = [];
+    state.tab = tab;
+    document.querySelectorAll('[role="tab"][data-tab]').forEach((button) => {
+      const active = button.dataset.tab === tab;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
+    });
+    renderForm();
+    setNavigation();
+    if (reveal) $('#editor-tabs')?.scrollIntoView?.({ block: 'start' });
   }
 
   function handleInput(event) {
@@ -60,9 +86,7 @@ export function createEditorController({ state, app, query, setNavigation, save 
   function handleClick(data) {
     if (state.mode !== 'edit') return false;
     if (data.tab) {
-      if (state.tab === 'cards' && data.tab !== 'cards') state.cardSelection = [];
-      state.tab = data.tab;
-      renderEditor();
+      selectTab(data.tab, Object.hasOwn(data, 'tabReveal'));
       return true;
     }
     if (data.ink) {

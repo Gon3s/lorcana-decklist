@@ -41,7 +41,7 @@ export function identityForm(current) {
         ${field(current, 'Format / extension', 'format', 'Ex. Construit · extension…')}
       </div>
       <div class="field">
-        <label>Image de la decklist</label>
+        <label>Image complémentaire de la decklist</label>
         <div
           class="dropzone"
           id="drop"
@@ -68,8 +68,8 @@ export function identityForm(current) {
         ${field(current, 'Auteur', 'author', 'Votre pseudo')}${field(current, 'Version', 'version', '1.0')}
       </div>
       <p class="source-note">
-        Un brouillon peut rester incomplet. Ajoutez un nom, une ou deux encres et une image avant de
-        finaliser votre fiche.
+        La decklist textuelle importée reste la référence. L’image et le lien d’origine sont
+        facultatifs.
       </p>`
   );
 }
@@ -247,7 +247,29 @@ ${esc(card.note)}</textarea>
     .join('');
 }
 export function cardsForm(deck) {
-  return /* HTML */ `<h3 class="catalog-editor-title">Vos cartes, leurs rôles.</h3>
+  const decklist = deck.decklist?.length
+    ? /* HTML */ `<section class="decklist-overview">
+        <div class="section-heading">
+          <h3>Decklist importée</h3>
+          <span class="muted"
+            >${deck.decklist.reduce((sum, card) => sum + card.qty, 0)} cartes</span
+          >
+        </div>
+        <div class="decklist-overview-grid">
+          ${deck.decklist
+            .map(
+              (card) =>
+                /* HTML */ `<div>
+                  <strong>${esc(card.qty)}× ${esc(card.name)}</strong>
+                  <small>${esc(card.printingCode)}</small>
+                </div>`,
+            )
+            .join('')}
+        </div>
+      </section>`
+    : '';
+  return /* HTML */ `${decklist}
+    <h3 class="catalog-editor-title">Vos cartes, leurs rôles.</h3>
     <p class="field-help">
       Ouvrez la recherche depuis la rubrique voulue, sélectionnez plusieurs cartes puis validez. Une
       carte peut appartenir à plusieurs rubriques.

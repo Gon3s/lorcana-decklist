@@ -1,18 +1,13 @@
 import { INKS } from '../core/constants.js';
-import { esc, inkOptions } from './html.js';
-
-const METHOD_LABELS = {
-  image: 'Importer une image',
-  catalog: 'Composer avec le catalogue',
-  later: 'À ajouter plus tard',
-};
+import { uniqueDeckCards } from '../core/decklist.js';
+import { esc } from './html.js';
 
 function progress(step) {
   return /* HTML */ `<ol class="creation-steps" aria-label="Progression de la création">
     ${[
-      ['Les bases', 'Nom et encres'],
-      ['Decklist', 'Image ou catalogue'],
-      ['Finaliser', 'Créer la fiche'],
+      ['Decklist', 'Coller la liste'],
+      ['Vérifier', 'Rapprocher les cartes'],
+      ['Stratégie', 'Choisir les rôles'],
     ]
       .map(
         ([title, detail], index) =>
@@ -27,106 +22,172 @@ function progress(step) {
   </ol>`;
 }
 
-function basics(deck, error) {
-  const ready = deck.name.trim() && deck.inks.length > 0;
+function errorMessage(error) {
+  return /* HTML */ `<p class="error creation-error" role="alert" ${error ? '' : 'hidden'}>
+    ${esc(error)}
+  </p>`;
+}
+
+function importStep(deck, input, error) {
+  const ready = deck.name.trim() && input.trim();
   return /* HTML */ `<div class="creation-section">
-    <h2>Posez les bases</h2>
-    <p class="field-help">Deux informations suffisent pour commencer.</p>
+    <h2>Importez votre decklist Duels.ink</h2>
+    <p class="field-help">
+      Collez la liste complète. Le code entre parenthèses identifie précisément les impressions
+      standards et promotionnelles.
+    </p>
     <div class="field">
       <label for="create-name">Nom du deck *</label>
       <input
         id="create-name"
         data-create-field="name"
         value="${esc(deck.name)}"
-        placeholder="Ex. Saphir Acier · Ramp"
+        placeholder="Ex. Émeraude Acier - Tempo"
         autocomplete="off"
         required
       />
     </div>
     <div class="field">
-      <label>Encres du deck * <small>- 1 ou 2 maximum</small></label>
-      ${inkOptions(deck.inks, 'create')}
-      <p id="create-ink-help" class="field-help creation-field-help">
-        ${deck.inks.length ? deck.inks.length + ' encre' + (deck.inks.length > 1 ? 's sélectionnées' : ' sélectionnée') : 'Sélectionnez au moins une encre.'}
+      <label for="create-decklist">Decklist Duels.ink *</label>
+      <textarea
+        id="create-decklist"
+        class="creation-decklist-input"
+        data-create-field="decklist"
+        placeholder="4 Flash - Efficient Clerk (14-171)&#10;4 Mushu - Stealthy Dragon (13-D23-12)"
+        spellcheck="false"
+        required
+      >
+${esc(input)}</textarea>
+      <p class="field-help creation-field-help">
+        Une carte par ligne : quantité, nom, puis code entre parenthèses.
       </p>
     </div>
-    <p id="create-error" class="error creation-error" role="alert" ${error ? '' : 'hidden'}>
-      ${esc(error)}
-    </p>
+    ${errorMessage(error)}
     <div class="creation-actions">
       <button class="btn" data-action="create-cancel">Annuler</button>
-      <button
-        class="btn primary"
-        id="create-basics-next"
-        data-action="create-next"
-        ${ready ? '' : 'disabled'}
-      >
-        Continuer vers la decklist →
+      <button class="btn primary" data-action="create-next" ${ready ? '' : 'disabled'}>
+        Rapprocher les cartes →
       </button>
     </div>
   </div>`;
 }
 
-function decklist(method) {
-  return /* HTML */ `<div class="creation-section">
-    <h2>Comment ajouter votre decklist ?</h2>
+function reviewStatus(result) {
+  const problems = result.errors.length + result.unresolved;
+  return /* HTML */ `<div class="creation-review-stats">
+    <span><strong>${result.total}</strong> cartes</span>
+    <span><strong>${result.matched}</strong> lignes rapprochées</span>
+    <span class="${problems ? 'problem' : 'success'}"
+      ><strong>${problems}</strong> problème${problems === 1 ? '' : 's'}</span
+    >
+  </div>`;
+}
+
+function reviewRows(result) {
+  const parseErrors = result.errors.map(
+    (error) =>
+      /* HTML */ `<li class="creation-review-row problem">
+        <span class="creation-review-qty">L${error.line}</span>
+        <span><strong>${esc(error.input)}</strong><small>${esc(error.message)}</small></span>
+        <span class="creation-review-state">À corriger</span>
+      </li>`,
+  );
+  const rows = result.rows.map((row) => {
+    const matched = row.status === 'matched';
+    const detail = matched
+      ? row.card.name
+      : row.status === 'ambiguous'
+        ? 'Plusieurs cartes correspondent à ce code.'
+        : 'Impression absente du catalogue intégré.';
+    return /* HTML */ `<li class="creation-review-row ${matched ? '' : 'problem'}">
+      <span class="creation-review-qty">${row.qty}×</span>
+      <span>
+        <strong>${esc(row.importedName)}</strong>
+        <small>${esc(row.printingCode)} · ${esc(detail)}</small>
+      </span>
+      <span class="creation-review-state">${matched ? 'Reconnue' : 'À corriger'}</span>
+    </li>`;
+  });
+  return /* HTML */ `<ul class="creation-review-list">
+    ${[...parseErrors, ...rows].join('')}
+  </ul>`;
+}
+
+function reviewStep(deck, result, error) {
+  const inks = deck.inks.map((ink) => INKS[ink]?.[0]).filter(Boolean);
+  return /* HTML */ `<div class="creation-section creation-section-wide">
+    <h2>Vérifiez le rapprochement</h2>
     <p class="field-help">
-      Choisissez le chemin le plus rapide. Vous pourrez toujours changer de méthode dans l’éditeur.
+      Les noms peuvent différer entre Duels.ink et le catalogue français. Le code d’impression fait
+      foi.
     </p>
-    <div class="creation-choices">
-      <button
-        class="creation-choice ${method === 'image' ? 'selected' : ''}"
-        data-create-method="image"
-        aria-pressed="${method === 'image'}"
-      >
-        <span class="creation-choice-icon">⇧</span><strong>Importer une image</strong>
-        <span>Le sélecteur de fichier s’ouvrira après la création.</span>
-      </button>
-      <button
-        class="creation-choice ${method === 'catalog' ? 'selected' : ''}"
-        data-create-method="catalog"
-        aria-pressed="${method === 'catalog'}"
-      >
-        <span class="creation-choice-icon">⌕</span><strong>Composer avec le catalogue</strong>
-        <span>Accédez directement à la recherche de cartes.</span>
-      </button>
-    </div>
-    <div class="creation-actions creation-actions-three">
-      <button class="btn" data-action="create-back">Retour</button>
-      <button class="btn ghost" data-action="create-skip">Passer pour l’instant</button>
-      <button
-        class="btn primary"
-        id="create-method-next"
-        data-action="create-next"
-        ${method && method !== 'later' ? '' : 'disabled'}
-      >
-        Continuer →
+    ${reviewStatus(result)}
+    ${inks.length ? /* HTML */ `<p class="creation-detected-inks">Encres détectées : <strong>${esc(inks.join(' + '))}</strong></p>` : ''}
+    ${reviewRows(result)} ${errorMessage(error)}
+    <div class="creation-actions">
+      <button class="btn" data-action="create-back">Corriger la decklist</button>
+      <button class="btn primary" data-action="create-next" ${result.ready ? '' : 'disabled'}>
+        Choisir les cartes stratégiques →
       </button>
     </div>
   </div>`;
 }
 
-function summary(deck, method) {
-  const inks = deck.inks.map((ink) => INKS[ink][0]).join(' + ');
-  return /* HTML */ `<div class="creation-section">
-    <h2>Votre brouillon est prêt</h2>
+function selectionButton(section, card, selected) {
+  return /* HTML */ `<button
+    class="btn small creation-role ${selected ? 'selected' : ''}"
+    data-create-section="${section}"
+    data-card-id="${esc(card.id)}"
+    aria-pressed="${selected}"
+  >
+    ${section === 'keys' ? 'Clé' : 'Core'}
+  </button>`;
+}
+
+function strategyStep(deck, error) {
+  const cards = uniqueDeckCards(deck.decklist);
+  return /* HTML */ `<div class="creation-section creation-section-wide">
+    <h2>Quelles cartes définissent le deck ?</h2>
     <p class="field-help">
-      Les cartes clés, matchups et lignes de jeu restent disponibles dans l’éditeur.
+      Sélectionnez les cartes clés et le core directement dans la decklist. Une carte peut
+      appartenir aux deux rubriques. Les notes et les techs restent modifiables ensuite.
     </p>
-    <dl class="creation-summary">
-      <div>
-        <dt>Nom</dt>
-        <dd>${esc(deck.name)}</dd>
-      </div>
-      <div>
-        <dt>Encres</dt>
-        <dd>${esc(inks)}</dd>
-      </div>
-      <div>
-        <dt>Decklist</dt>
-        <dd>${METHOD_LABELS[method]}</dd>
-      </div>
-    </dl>
+    <div class="creation-role-summary">
+      <span
+        ><strong>${deck.keys.length}</strong> carte${deck.keys.length === 1 ? '' : 's'}
+        clé${deck.keys.length === 1 ? '' : 's'}</span
+      >
+      <span
+        ><strong>${deck.core.length}</strong> carte${deck.core.length === 1 ? '' : 's'} core</span
+      >
+    </div>
+    <ul class="creation-strategy-list">
+      ${cards
+        .map(
+          (card) =>
+            /* HTML */ `<li class="creation-strategy-card">
+              ${card.image ? `<img src="${esc(card.image)}" alt="" loading="lazy" />` : ''}
+              <span>
+                <strong>${card.qty}× ${esc(card.name)}</strong>
+                <small>${esc(card.printingCode)}</small>
+              </span>
+              <span class="creation-role-actions">
+                ${selectionButton(
+                  'keys',
+                  card,
+                  deck.keys.some((row) => row.id === card.id),
+                )}
+                ${selectionButton(
+                  'core',
+                  card,
+                  deck.core.some((row) => row.id === card.id),
+                )}
+              </span>
+            </li>`,
+        )
+        .join('')}
+    </ul>
+    ${errorMessage(error)}
     <div class="creation-actions">
       <button class="btn" data-action="create-back">Retour</button>
       <button class="btn primary" data-action="create-finish">Créer et ouvrir la fiche ✦</button>
@@ -134,9 +195,13 @@ function summary(deck, method) {
   </div>`;
 }
 
-export function creationPage({ deck, step, method, error }) {
+export function creationPage({ deck, step, input, result, error }) {
   const content =
-    step === 1 ? basics(deck, error) : step === 2 ? decklist(method) : summary(deck, method);
+    step === 1
+      ? importStep(deck, input, error)
+      : step === 2
+        ? reviewStep(deck, result, error)
+        : strategyStep(deck, error);
   return /* HTML */ `<div class="workspace-top">
       <button class="back" data-action="create-cancel">← Mes fiches</button>
       <span class="muted">La fiche sera enregistrée à la dernière étape.</span>

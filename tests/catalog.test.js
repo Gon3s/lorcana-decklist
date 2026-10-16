@@ -59,6 +59,50 @@ test('official normalization merges printings and preserves all extensions', () 
   assert.equal(result.cards[0].name, 'Merlin - En chèvre');
   assert.deepEqual(result.cards[0].set, ['set2', 'set9']);
 });
+test('official printing identifiers preserve standard and promotional variants', () => {
+  const result = normalizeCatalog({
+    cards: {
+      characters: [
+        {
+          deck_building_id: 'mushu',
+          name: 'Mushu',
+          subtitle: 'Dragon furtif',
+          magic_ink_colors: ['EMERALD'],
+          ink_cost: 4,
+          card_sets: ['set13'],
+          card_identifier: '97/207 FR 13',
+          thumbnail_url: 'https://example.com/standard.jpg',
+        },
+        {
+          deck_building_id: 'mushu',
+          name: 'Mushu',
+          subtitle: 'Stealthy Dragon',
+          magic_ink_colors: ['EMERALD'],
+          ink_cost: 4,
+          card_sets: ['set13'],
+          card_identifier: '12/D23 EN 13',
+          thumbnail_url: 'https://example.com/promo.jpg',
+        },
+        {
+          deck_building_id: 'legacy-promo',
+          name: 'Mickey Mouse',
+          subtitle: 'Brave petit tailleur',
+          magic_ink_colors: ['STEEL'],
+          ink_cost: 8,
+          card_sets: ['set1'],
+          card_identifier: '1TFC EN 1/P1',
+          thumbnail_url: 'https://example.com/promo1.jpg',
+        },
+      ],
+    },
+  });
+  assert.deepEqual(
+    result.cards[0].printings.map((printing) => printing.code),
+    ['13-97', '13-D23-12'],
+  );
+  assert.equal(result.cards[0].printings[1].image, 'https://example.com/promo.jpg');
+  assert.equal(result.cards[1].printings[0].code, '1-P1-1');
+});
 test('combined filters search accents, apostrophes and rules text', () => {
   const index = createCardIndex(effectiveCards(document()));
   assert.equal(
@@ -146,6 +190,11 @@ test('bundled catalogue has names, images, rules text, valid types and inks', as
   assert.ok(doc.cards.some((c) => c.text.includes('pioche')));
   assert.ok(doc.sets.length > 10);
   assert.ok(doc.cards.every((c) => c.image.startsWith('https://')));
+  const printings = doc.cards.flatMap((card) => card.printings).filter((printing) => printing.code);
+  assert.ok(printings.every((printing) => printing.image.startsWith('https://')));
+  assert.equal(new Set(printings.map((printing) => printing.code)).size, printings.length);
+  for (const code of ['13-D23-12', '9-C2-1', '1-P1-1'])
+    assert.ok(printings.some((printing) => printing.code === code));
 });
 
 test('IndexedDB catalogue cache persists across repository instances', async () => {

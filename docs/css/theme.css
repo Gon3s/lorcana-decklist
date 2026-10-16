@@ -741,35 +741,41 @@ footer > span:first-child {
   color: #dfcfaa;
   font: 500 23px var(--serif);
 }
-.creation-choice {
-  color: #a9b9d0;
+.creation-review-stats span,
+.creation-role-summary span {
   background: #0b172d;
-  border: 1px solid #3b5072;
-  border-radius: 3px;
-  font-size: 14px;
+  border-color: #3b5072;
+  color: #aebbd0;
 }
-.creation-choice:hover {
-  background: #162641;
-  border-color: #6a7a95;
+.creation-review-stats strong,
+.creation-role-summary strong {
+  color: #f0dfb8;
 }
-.creation-choice.selected {
-  background: #233654;
-  border-color: #d1b374;
-  box-shadow: inset 0 0 0 1px #c3a56744;
+.creation-review-stats .success {
+  border-color: #63835e;
 }
-.creation-choice strong {
-  color: #e0e7f3;
-  font-size: 16px;
+.creation-review-stats .problem,
+.creation-review-row.problem {
+  color: #e3a29a;
 }
-.creation-choice-icon {
+.creation-review-stats .problem {
+  border-color: #8d554f;
+}
+.creation-review-row small,
+.creation-strategy-card small,
+.creation-review-state {
+  color: #91a4c2;
+}
+.creation-review-row.problem .creation-review-state {
+  color: #e3a29a;
+}
+.creation-review-qty {
   color: #d8bb7d;
 }
-.creation-summary dt {
-  color: #92a4c2;
-}
-.creation-summary dd {
-  color: #e0e7f3;
-  font-weight: 600;
+.creation-role.selected {
+  background: #d8b774;
+  border-color: #f1d9a4;
+  color: #17213b;
 }
 label {
   color: #d4ddeb;

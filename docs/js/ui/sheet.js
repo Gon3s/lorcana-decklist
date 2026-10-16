@@ -21,6 +21,36 @@ export function sheet(d) {
             .join('')}
         </section>`
       : '';
+  const decklist = () => {
+    if (d.decklist?.length)
+      return /* HTML */ `<section class="sheet-section">
+        <h3>La decklist</h3>
+        <div class="sheet-decklist">
+          ${d.decklist
+            .map(
+              (card) =>
+                /* HTML */ `<div>
+                  <strong
+                    ><span class="sheet-pill">${esc(card.qty)}×</span>${esc(card.name)}</strong
+                  >
+                  <small>${esc(card.printingCode)}</small>
+                </div>`,
+            )
+            .join('')}
+        </div>
+      </section>`;
+    if (safeURL(d.image))
+      return /* HTML */ `<section class="sheet-section">
+        <h3>La decklist</h3>
+        <img
+          class="decklist"
+          src="${esc(safeURL(d.image))}"
+          alt="Decklist ${esc(d.name)}"
+          data-action="zoom"
+        />
+      </section>`;
+    return '<section class="sheet-section"><h3>La decklist</h3><div class="empty-block">Importez une decklist Duels.ink lors de la création.</div></section>';
+  };
   return /* HTML */ `<article class="sheet" style="${colors(d)}">
     <div class="sheet-head">
       <div class="sheet-running"><span>GRIMOIRE / LORCANA</span><span>NOTES DE JEU</span></div>
@@ -34,19 +64,10 @@ export function sheet(d) {
       </div>
     </div>
     <div class="sheet-body">
-      ${
-        safeURL(d.image)
-          ? /* HTML */ `<section class="sheet-section">
-              <h3>La decklist</h3>
-              <img
-                class="decklist"
-                src="${esc(safeURL(d.image))}"
-                alt="Decklist ${esc(d.name)}"
-                data-action="zoom"
-              />
-            </section>`
-          : '<section class="sheet-section"><h3>La decklist</h3><div class="empty-block">Votre image de decklist apparaîtra ici.</div></section>'
-      }${cards('keys', 'Cartes clés')}${cards('core', 'Core du deck')}${['favorable', 'unfavorable']
+      ${decklist()}${cards('keys', 'Cartes clés')}${cards('core', 'Core du deck')}${[
+        'favorable',
+        'unfavorable',
+      ]
         .map((k) =>
           d[k].length
             ? /* HTML */ `<section class="sheet-section">

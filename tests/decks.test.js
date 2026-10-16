@@ -7,6 +7,7 @@ import {
   encodeDeckExport,
   addCatalogCard,
   addCatalogCards,
+  toggleSectionCard,
   toggleInk,
   moveRow,
 } from '../docs/js/core/decks.js';
@@ -47,6 +48,28 @@ test('catalog cards can be added as one duplicate-safe batch', () => {
   );
   assert.throws(() => addCatalogCards(deck, 'unknown', [second]));
   assert.throws(() => addCatalogCards(deck, 'keys', null), /Liste de cartes/);
+});
+test('full decklists round-trip and feed strategic selections without duplicate state', () => {
+  const deck = createDeck();
+  deck.name = 'Import Duels.ink';
+  deck.inks = ['emerald'];
+  deck.decklist = [
+    {
+      id: 'mushu',
+      name: 'Mushu - Dragon furtif',
+      qty: 4,
+      image: 'https://example.com/mushu.jpg',
+      printingCode: '13-D23-12',
+      inks: ['emerald'],
+    },
+  ];
+  assert.equal(toggleSectionCard(deck, 'keys', deck.decklist[0]), true);
+  assert.equal(deck.keys[0].qty, 4);
+  assert.equal(toggleSectionCard(deck, 'core', deck.decklist[0]), true);
+  assert.equal(toggleSectionCard(deck, 'keys', deck.decklist[0]), false);
+  const restored = decodeDeckExport(encodeDeckExport(deck));
+  assert.deepEqual(restored.decklist, deck.decklist);
+  assert.equal(restored.core[0].id, 'mushu');
 });
 test('two distinct inks maximum in UI and imports', () => {
   const inks = [];

@@ -5,6 +5,7 @@ import {
 } from './js/controllers/catalog-controller.js';
 import { createDeckController } from './js/controllers/deck-controller.js';
 import { createEditorController } from './js/controllers/editor-controller.js';
+import { createCreationController } from './js/controllers/creation-controller.js';
 
 const $ = (selector) => document.querySelector(selector);
 const app = $('#app');
@@ -25,7 +26,8 @@ const state = {
   catalogWarning: '',
   cardSelection: [],
   creationStep: 1,
-  creationMethod: '',
+  creationInput: '',
+  creationResult: null,
   creationError: '',
 };
 let toastTimer;
@@ -51,6 +53,16 @@ const editor = createEditorController({
   save: () => deck.save(),
 });
 deck = createDeckController({ state, app, query: $, toast, setNavigation, editor });
+const creation = createCreationController({
+  state,
+  app,
+  query: $,
+  toast,
+  setNavigation,
+  save: () => deck.save(),
+  library: () => deck.library(),
+  editor,
+});
 
 function toast(message) {
   $('#toast').textContent = message;
@@ -106,7 +118,7 @@ window.addEventListener('popstate', restoreRoute);
 window.addEventListener('hashchange', restoreRoute);
 
 app.addEventListener('input', (event) => {
-  if (!catalog.handleFilter(event) && !deck.handleInput(event)) editor.handleInput(event);
+  if (!catalog.handleFilter(event) && !creation.handleInput(event)) editor.handleInput(event);
 });
 app.addEventListener('change', (event) => {
   if (!catalog.handleFilter(event)) editor.handleChange(event);
@@ -120,7 +132,12 @@ app.addEventListener('click', async (event) => {
       await catalogClick;
       return;
     }
-    if (editor.handleClick(button.dataset) || deck.handleClick(button.dataset)) return;
+    if (
+      editor.handleClick(button.dataset) ||
+      creation.handleClick(button.dataset) ||
+      deck.handleClick(button.dataset)
+    )
+      return;
     await handleAction(button.dataset.action, button.dataset.id);
   } catch (error) {
     toast(error.message || 'Cette action n’a pas pu aboutir.');
@@ -135,6 +152,11 @@ async function handleAction(action, id) {
   const catalogAction = catalog.handleAction(action);
   if (catalogAction) {
     await catalogAction;
+    return;
+  }
+  const creationAction = creation.handleAction(action);
+  if (creationAction) {
+    await creationAction;
     return;
   }
   const deckAction = deck.handleAction(action, id);

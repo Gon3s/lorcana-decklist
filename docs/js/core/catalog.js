@@ -15,6 +15,43 @@ const TYPE_ALIASES = {
   lieu: 'locations',
 };
 
+function regularPrintingCode(set, number) {
+  const setNumber = String(set).match(/^set(\d+)$/)?.[1];
+  return setNumber && number !== null ? setNumber + '-' + number : '';
+}
+
+function officialPrinting(value, sets, number) {
+  const identifier = String(value.card_identifier ?? '').trim();
+  const match = identifier.match(/^(\d+[A-Z]?)\/([A-Z0-9]+)\s+[A-Z]{2}\s+(\d+)$/i);
+  const legacyPromo = identifier.match(/^(\d+)TFC\s+[A-Z]{2}\s+(\d+)\/([A-Z0-9]+)$/i);
+  if (!match && !legacyPromo) return null;
+  const setNumber = match?.[3] || legacyPromo[1];
+  const collectorNumber = (match?.[1] || legacyPromo[2]).toUpperCase();
+  const denominator = (match?.[2] || legacyPromo[3]).toUpperCase();
+  const set = 'set' + setNumber;
+  const promo = /^\d+$/.test(denominator) ? '' : denominator;
+  return {
+    set: sets.includes(set) ? set : sets[0] || set,
+    number,
+    code: setNumber + (promo ? '-' + promo : '') + '-' + collectorNumber,
+    image: safeURL(value.image ?? value.thumbnail_url),
+  };
+}
+
+function normalizePrinting(value, fallbackImage = '') {
+  const set = String(value.set);
+  const number = value.number == null ? null : Number(value.number);
+  const code = cleanText(value.code || regularPrintingCode(set, number))
+    .trim()
+    .toUpperCase();
+  return {
+    set,
+    number,
+    code,
+    image: safeURL(value.image || fallbackImage),
+  };
+}
+
 export function normalizeCard(value, fallbackType = '') {
   if (!value || typeof value !== 'object') throw new Error('Carte invalide.');
   const id = String(value.id ?? value.deck_building_id ?? '').trim();
@@ -44,17 +81,22 @@ export function normalizeCard(value, fallbackType = '') {
     rawNumber === null || rawNumber === undefined || rawNumber === '' ? null : Number(rawNumber);
   if (number !== null && (!Number.isInteger(number) || number < 0))
     throw new Error('Numéro de carte invalide.');
+  const parsedOfficialPrinting = officialPrinting(value, sets, number);
   const printings = Array.isArray(value.printings)
-    ? value.printings.map((printing) => ({
-        set: String(printing.set),
-        number: printing.number == null ? null : Number(printing.number),
-      }))
-    : sets.map((set) => ({ set: String(set), number }));
+    ? value.printings.map((printing) =>
+        normalizePrinting(printing, value.image ?? value.thumbnail_url),
+      )
+    : parsedOfficialPrinting
+      ? [parsedOfficialPrinting]
+      : sets.map((set) =>
+          normalizePrinting({ set: String(set), number }, value.image ?? value.thumbnail_url),
+        );
   if (
     printings.some(
       (printing) =>
         !sets.includes(printing.set) ||
-        (printing.number !== null && (!Number.isInteger(printing.number) || printing.number < 0)),
+        (printing.number !== null && (!Number.isInteger(printing.number) || printing.number < 0)) ||
+        (printing.code && !/^\d+(?:-[A-Z0-9]+)*-[A-Z0-9]+$/.test(printing.code)),
     )
   )
     throw new Error('Numérotation de réimpression invalide.');
@@ -96,7 +138,7 @@ export function normalizeCatalog(raw) {
       previous.printings = [
         ...new Map(
           [...previous.printings, ...card.printings].map((printing) => [
-            printing.set + ':' + printing.number,
+            printing.code || printing.set + ':' + printing.number,
             printing,
           ]),
         ).values(),
@@ -227,12 +269,16 @@ export function cardPrinting(card, selectedSet = '') {
   );
 }
 
-/** Fill only missing legacy numbering; never replace personal card content. */
+/** Fill only incomplete official printing metadata; never replace personal card content. */
 export function upgradeLegacyPrintings(raw, reference) {
   const document = normalizeCatalog(raw);
   const known = new Map(reference.cards.map((card) => [card.id, card]));
   function upgrade(original, card) {
-    if (Array.isArray(original?.printings)) return card;
+    if (
+      Array.isArray(original?.printings) &&
+      original.printings.every((printing) => printing.number == null || printing.code)
+    )
+      return card;
     const official = known.get(card.id);
     if (!official) return card;
     const printings = official.printings.filter((printing) => card.set.includes(printing.set));
@@ -250,7 +296,16 @@ export function upgradeLegacyPrintings(raw, reference) {
 }
 export function needsPrintingUpgrade(raw) {
   return (
-    (Array.isArray(raw.cards) && raw.cards.some((card) => !Array.isArray(card.printings))) ||
-    Object.values(raw.overrides ?? {}).some((card) => !Array.isArray(card.printings))
+    (Array.isArray(raw.cards) &&
+      raw.cards.some(
+        (card) =>
+          !Array.isArray(card.printings) ||
+          card.printings.some((printing) => printing.number != null && !printing.code),
+      )) ||
+    Object.values(raw.overrides ?? {}).some(
+      (card) =>
+        !Array.isArray(card.printings) ||
+        card.printings.some((printing) => printing.number != null && !printing.code),
+    )
   );
 }

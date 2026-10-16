@@ -88,7 +88,7 @@ export class CatalogRepository {
             this.document = upgraded;
           } catch {
             this.warning =
-              'Catalogue conservé. Les anciens numéros de réimpression n’ont pas pu être actualisés. Réessayez lors de votre prochaine visite.';
+              'Catalogue conservé. Les anciennes impressions n’ont pas pu être actualisées. Réessayez lors de votre prochaine visite.';
           }
         }
         return this.document;

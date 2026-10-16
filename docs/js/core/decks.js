@@ -1,4 +1,5 @@
 import { ARCHETYPES, CARD_SECTIONS, INKS } from './constants.js';
+import { isPrintingCode, normalizePrintingCode } from './decklist.js';
 import { quantity, safeURL, uid, cleanText } from './utils.js';
 
 export function createDeck() {
@@ -13,6 +14,7 @@ export function createDeck() {
     version: '1.0',
     image: '',
     source: '',
+    decklist: [],
     keys: [],
     core: [],
     tech: [],
@@ -58,6 +60,24 @@ export function validateDeck(value, { newIdentity = false } = {}) {
   deck.archetype = ARCHETYPES.includes(value.archetype) ? value.archetype : 'Autre';
   deck.example = !newIdentity && value.example === true;
   if (!newIdentity && !Number.isNaN(Date.parse(value.updated))) deck.updated = value.updated;
+  if (value.decklist !== undefined && !Array.isArray(value.decklist))
+    throw new Error('Decklist invalide.');
+  deck.decklist = (value.decklist ?? []).map((row) => {
+    if (!row || typeof row !== 'object' || typeof row.id !== 'string' || !row.id)
+      throw new Error('Carte de decklist invalide.');
+    const printingCode = normalizePrintingCode(row.printingCode);
+    if (!isPrintingCode(printingCode)) throw new Error("Code d'impression de decklist invalide.");
+    return {
+      id: row.id,
+      name: cleanText(row.name),
+      qty: quantity(row.qty),
+      image: safeURL(row.image),
+      printingCode,
+      inks: Array.isArray(row.inks)
+        ? [...new Set(row.inks.filter((ink) => INKS[ink]))].slice(0, 2)
+        : [],
+    };
+  });
   for (const section of [...Object.keys(CARD_SECTIONS), 'lines', 'favorable', 'unfavorable']) {
     if (!Array.isArray(value[section])) throw new Error('Rubrique manquante : ' + section);
     deck[section] = value[section].map((row) => {
@@ -102,6 +122,22 @@ export function addCatalogCards(deck, section, cards) {
   if (!Array.isArray(cards)) throw new Error('Liste de cartes invalide.');
   if (!CARD_SECTIONS[section]) throw new Error('Rubrique de cartes inconnue.');
   return cards.reduce((count, card) => count + Number(addCatalogCard(deck, section, card)), 0);
+}
+export function toggleSectionCard(deck, section, card) {
+  if (!CARD_SECTIONS[section]) throw new Error('Rubrique de cartes inconnue.');
+  const index = deck[section].findIndex((row) => row.id === card.id);
+  if (index >= 0) {
+    deck[section].splice(index, 1);
+    return false;
+  }
+  deck[section].push({
+    id: card.id,
+    name: cleanText(card.name),
+    image: safeURL(card.image),
+    qty: quantity(card.qty),
+    note: '',
+  });
+  return true;
 }
 export function toggleInk(inks, ink) {
   if (!INKS[ink]) throw new Error('Encre inconnue.');

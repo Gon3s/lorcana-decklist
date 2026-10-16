@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Window } from 'happy-dom';
+import { DUELS_DECKLIST } from './fixtures.js';
 
 const snapshot = JSON.parse(
   await readFile(new URL('../docs/assets/catalog.json', import.meta.url), 'utf8'),
@@ -83,15 +84,21 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.equal(JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length, storedDeckCount);
   click('[data-action="new"]');
   input('#create-name', 'Test de non-régression');
-  click('[data-ink="ruby"]');
-  click('[data-ink="amethyst"]');
-  assert.equal($('#create-basics-next').disabled, false);
+  input('#create-decklist', DUELS_DECKLIST);
+  assert.equal($('[data-action="create-next"]').disabled, false);
   click('[data-action="create-next"]');
-  click('[data-create-method="catalog"]');
+  assert.ok($('.creation-review-stats').textContent.includes('60'));
+  assert.equal($$('.creation-review-row.problem').length, 0);
+  assert.ok($('.creation-detected-inks').textContent.includes('Acier + Émeraude'));
   click('[data-action="create-next"]');
-  assert.ok($('.creation-summary').textContent.includes('Test de non-régression'));
+  assert.equal($$('.creation-strategy-card').length, 18);
+  const importedId = $('[data-create-section="keys"]').dataset.cardId;
+  click(`[data-create-section="keys"][data-card-id="${importedId}"]`);
+  click(`[data-create-section="core"][data-card-id="${importedId}"]`);
+  assert.equal($$('[data-create-section][aria-pressed="true"]').length, 2);
   click('[data-action="create-finish"]');
   assert.ok($('#selected-card-sections'));
+  assert.ok($('.decklist-overview').textContent.includes('60 cartes'));
   assert.equal(JSON.parse(localStorage.getItem('grimoire-v1')).length, deckCount + 1);
   assert.equal($('.catalog-browser'), null);
   click('[data-pick-section="keys"]');
@@ -106,10 +113,12 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   $('[data-picker-filter="deckOnly"]').checked = true;
   $('[data-picker-filter="deckOnly"]').dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal($$('[data-picker-ink].selected').length, 2);
-  click('[data-picker-ink="emerald"]');
+  click('[data-picker-ink="amber"]');
   assert.equal($('[data-picker-filter="deckOnly"]').checked, false);
   assert.equal($$('[data-picker-ink].selected').length, 3);
-  assert.equal(window.document.activeElement.dataset.pickerInk, 'emerald');
+  assert.equal(window.document.activeElement.dataset.pickerInk, 'amber');
+  $('[data-picker-filter="deckOnly"]').checked = false;
+  $('[data-picker-filter="deckOnly"]').dispatchEvent(new window.Event('change', { bubbles: true }));
   input('#card-picker-search', 'merlin');
   const cardButtons = $$('[data-picker-select]');
   assert.ok(cardButtons.length > 1);
@@ -126,30 +135,39 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok(
     $('.card-picker-selection').textContent.replace(/\s+/g, ' ').includes('2 cartes sélectionnées'),
   );
-  assert.equal($$('#section-keys .selected-card').length, 0);
+  assert.equal($$('#section-keys .selected-card').length, 1);
   assert.equal(
     JSON.parse(localStorage.getItem('grimoire-v1')).find(
       (deck) => deck.name === 'Test de non-régression',
     ).keys.length,
-    0,
+    1,
   );
   click('[data-picker-add]');
   assert.equal($('.card-picker-dialog'), null);
-  assert.equal($$('#section-keys .selected-card').length, 2);
+  assert.equal($$('#section-keys .selected-card').length, 3);
   click('[data-pick-section="core"]');
+  $('[data-picker-filter="deckOnly"]').checked = false;
+  $('[data-picker-filter="deckOnly"]').dispatchEvent(new window.Event('change', { bubbles: true }));
   input('#card-picker-search', 'merlin');
   click('[data-picker-select="' + id + '"]');
-  assert.equal($$('#section-core .selected-card').length, 0);
-  click('[data-picker-add]');
   assert.equal($$('#section-core .selected-card').length, 1);
+  click('[data-picker-add]');
+  assert.equal($$('#section-core .selected-card').length, 2);
   const stored = JSON.parse(localStorage.getItem('grimoire-v1')).find(
     (deck) => deck.name === 'Test de non-régression',
   );
   assert.deepEqual(
     stored.keys.map((card) => card.id),
-    [id, secondId],
+    [importedId, id, secondId],
   );
-  assert.equal(stored.core[0].id, id);
+  assert.deepEqual(
+    stored.core.map((card) => card.id),
+    [importedId, id],
+  );
+  assert.equal(
+    stored.decklist.reduce((sum, card) => sum + card.qty, 0),
+    60,
+  );
   click('[data-tab="strategy"]');
   assert.equal(window.location.hash, '#/modifier/' + stored.id + '/strategy');
   input('#f-mulligan', 'Chercher une courbe jouable');
@@ -168,7 +186,7 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   window.history.pushState(null, '', '#/modifier/' + stored.id + '/cards');
   window.dispatchEvent(new window.PopStateEvent('popstate'));
   assert.ok($('#selected-card-sections'));
-  assert.equal($$('#section-core .selected-card').length, 1);
+  assert.equal($$('#section-core .selected-card').length, 2);
   window.history.back();
   await new Promise((resolve) => nativeSetTimeout(resolve, 30));
   assert.ok($('.catalog-heading'));
@@ -183,11 +201,8 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('#toast').textContent.includes('pas enregistrée'));
   click('[data-action="new"]');
   input('#create-name', 'Brouillon sans decklist');
-  click('[data-ink="amber"]');
-  click('[data-action="create-next"]');
-  click('[data-action="create-skip"]');
-  assert.ok($('.creation-summary').textContent.includes('À ajouter plus tard'));
-  click('[data-action="create-finish"]');
-  assert.equal($('#f-name').value, 'Brouillon sans decklist');
+  assert.equal($('[data-action="create-next"]').disabled, true);
+  click('[data-action="create-cancel"]');
+  assert.ok($('#grid'));
   await window.happyDOM.abort();
 });

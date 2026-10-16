@@ -790,6 +790,9 @@ footer > span:first-child {
 .creation-section {
   max-width: 780px;
 }
+.creation-section-wide {
+  max-width: 1040px;
+}
 .creation-section h2 {
   margin: 0;
 }
@@ -808,51 +811,82 @@ footer > span:first-child {
   padding-top: 20px;
   border-top: 1px solid var(--line);
 }
-.creation-actions-three {
+.creation-decklist-input {
+  min-height: 360px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.creation-review-stats,
+.creation-role-summary {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 22px 0;
 }
-.creation-actions-three .btn:nth-child(2) {
-  justify-self: center;
+.creation-review-stats span,
+.creation-role-summary span {
+  padding: 14px;
+  border: 1px solid var(--line);
 }
-.creation-choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 22px;
-}
-.creation-choice {
-  min-height: 145px;
-  padding: 18px;
-  text-align: left;
-}
-.creation-choice strong,
-.creation-choice > span {
+.creation-review-stats strong,
+.creation-role-summary strong {
   display: block;
+  margin-bottom: 3px;
+  font-size: 18px;
 }
-.creation-choice strong {
-  margin: 13px 0 7px;
+.creation-detected-inks {
+  margin: -5px 0 18px;
 }
-.creation-choice-icon {
-  font-size: 28px;
+.creation-review-list,
+.creation-strategy-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
 }
-.creation-summary {
-  margin: 24px 0 0;
-}
-.creation-summary div {
-  display: flex;
+.creation-review-row,
+.creation-strategy-card {
+  display: grid;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 15px 0;
+  gap: 14px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--line);
 }
-.creation-summary dt,
-.creation-summary dd {
-  margin: 0;
+.creation-review-row {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
 }
-.creation-summary dd {
-  text-align: right;
+.creation-review-row strong,
+.creation-review-row small,
+.creation-strategy-card strong,
+.creation-strategy-card small {
+  display: block;
+}
+.creation-review-row small,
+.creation-strategy-card small {
+  margin-top: 4px;
+}
+.creation-review-qty {
+  font-weight: 700;
+  text-align: center;
+}
+.creation-review-state {
+  white-space: nowrap;
+}
+.creation-role-summary {
+  grid-template-columns: repeat(2, 1fr);
+}
+.creation-strategy-card {
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+}
+.creation-strategy-card img {
+  width: 46px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.creation-role-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 label {
   display: block;
@@ -942,6 +976,34 @@ label small {
 .section-heading h3 {
   font: 500 23px var(--display);
   margin: 0;
+}
+.decklist-overview {
+  margin-bottom: 34px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.decklist-overview-grid,
+.sheet-decklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 22px;
+}
+.decklist-overview-grid > div,
+.sheet-decklist > div {
+  min-width: 0;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line);
+}
+.decklist-overview-grid strong,
+.decklist-overview-grid small,
+.sheet-decklist strong,
+.sheet-decklist small {
+  display: block;
+}
+.decklist-overview-grid small,
+.sheet-decklist small {
+  margin-top: 4px;
+  color: var(--muted);
 }
 .repeat-row {
   padding: 15px 0 20px;
@@ -1615,17 +1677,36 @@ dialog .actions {
   .creation-step span {
     display: none;
   }
-  .creation-choices {
-    grid-template-columns: 1fr;
-  }
-  .creation-actions,
-  .creation-actions-three {
+  .creation-actions {
     display: flex;
     align-items: stretch;
     flex-direction: column-reverse;
   }
   .creation-actions .btn {
     width: 100%;
+  }
+  .creation-review-stats,
+  .creation-role-summary {
+    grid-template-columns: 1fr;
+  }
+  .creation-review-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+  .creation-review-state {
+    grid-column: 2;
+  }
+  .creation-strategy-card {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+  .creation-role-actions {
+    grid-column: 2;
+  }
+  .creation-decklist-input {
+    min-height: 300px;
+  }
+  .decklist-overview-grid,
+  .sheet-decklist {
+    grid-template-columns: 1fr;
   }
   .tabs {
     padding: 0 17px;

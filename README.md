@@ -10,7 +10,7 @@ Application statique française pour écrire, sauvegarder et partager des guides
 - **Catalogue** : consulter les illustrations et règles, importer/exporter le catalogue JSON, ajouter/corriger une carte ou la masquer.
 - Un import remplace le catalogue local après validation et confirmation.
 
-Les fiches restent dans le navigateur (`localStorage`, clé historique `grimoire-v1`). Le catalogue personnalisé utilise **IndexedDB**, séparément des fiches. Ces données ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Les cartes enregistrées dans les fiches sont des copies ; modifier le catalogue ne réécrit pas les fiches existantes.
+Les fiches restent dans le navigateur (`localStorage`, clé `grimoire-v2`). Le catalogue personnalisé utilise **IndexedDB**, séparément des fiches. Ces données ne se synchronisent pas entre appareils : les exports JSON servent à les transmettre ou les sauvegarder. Les cartes enregistrées dans les fiches sont des copies ; modifier le catalogue ne réécrit pas les fiches existantes.
 
 ### Importer une decklist Duels.ink
 
@@ -24,7 +24,7 @@ Chaque ligne doit contenir une quantité, le nom exporté et le code d’impress
 
 Le nom peut être en anglais : il sert à la relecture, mais pas au rapprochement. `14-171` désigne une impression standard ; `13-D23-12` et `9-C2-1` conservent respectivement les promos D23 et C2 ainsi que leur illustration. Une ligne inconnue ou ambiguë est signalée et doit être corrigée avant la création. La decklist doit contenir au moins 60 cartes et utiliser une ou deux encres.
 
-La decklist textuelle est enregistrée dans la fiche et reste sa référence. L’image de decklist et le lien d’origine sont facultatifs. Pendant la création, Cartes clés et Core se choisissent uniquement parmi les cartes rapprochées ; la recherche catalogue reste disponible ensuite dans l’éditeur.
+La decklist textuelle est obligatoire et enregistrée dans la fiche. Le lien d’origine est facultatif. Pendant la création, Cartes clés et Core se choisissent uniquement parmi les cartes rapprochées ; la recherche catalogue reste disponible ensuite dans l’éditeur.
 
 Le site utilise le catalogue intégré au dépôt. Sa mise à jour depuis Ravensburger se fait uniquement en développement, avec le script décrit plus bas. Vous pouvez importer un export JSON normalisé ou le catalogue officiel français brut. Une écriture échouée conserve le catalogue actif et affiche une erreur.
 
@@ -62,9 +62,9 @@ npm run build         # publication statique dans _site/
 
 Les vues ne font pas de requête réseau. Les services ne manipulent pas le DOM. Les règles métier sont partagées par l’interface, les imports et les tests.
 
-## Données et compatibilité
+## Données
 
-- Les exports de fiches conservent `schemaVersion: 1`. Le champ optionnel `decklist` contient la liste rapprochée avec quantité et code d’impression. Les sauvegardes antérieures sans ce champ sont validées et relues sans migration destructive. Les entrées illisibles sont signalées ; le chargement ne réécrit jamais le stockage.
+- Les exports de fiches utilisent `schemaVersion: 2`. La `decklist` rapprochée, avec quantité, code d’impression et encres, est obligatoire. Les anciens exports et l’ancien stockage ne sont pas pris en charge.
 - Catalogue `schemaVersion: 1` : `cards` officielles, `custom` ajoutées, `overrides` indexées par identifiant, `hidden` pour les cartes masquées, `sets`, `source`, `updated`.
 - Le normaliseur accepte aussi la réponse officielle Ravensburger (`cards` groupées par type), regroupe les extensions d’une même identité et conserve pour chaque impression son code Duels.ink et son illustration, promos comprises.
 - Les cartes spéciales de quête sans encre sont consultables ; le filtre « Encres du deck uniquement » les exclut.

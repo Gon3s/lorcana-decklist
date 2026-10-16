@@ -571,11 +571,6 @@ main {
   padding: 4px 6px;
   margin-right: 0;
 }
-.tag.example {
-  color: #aebfe1;
-  background: #91a9da10;
-  border-color: #7d93bf44;
-}
 .deck-body h3 {
   font: 500 23px/1.3 var(--serif);
   letter-spacing: -0.5px;
@@ -820,23 +815,6 @@ select:focus {
   background: color-mix(in srgb, var(--ink) 24%, #101a30);
   box-shadow: inset 0 -2px var(--ink);
 }
-.dropzone {
-  background: radial-gradient(ellipse at center, #23335266, transparent), #0b172d;
-  border: 1px dashed #8c784f88;
-  border-radius: 3px;
-}
-.dropzone:focus,
-.dropzone.dragover {
-  background: #223452;
-  border-color: #d4b57a;
-}
-.dropzone strong {
-  font: 500 17px var(--serif);
-  color: #dfc58e;
-}
-.dropzone p {
-  color: #92a5c3;
-}
 .section-heading h3 {
   font: 500 19px var(--serif);
   color: #dfcfaa;
@@ -946,9 +924,6 @@ select:focus {
 }
 .read-layout .sheet-section h3 {
   font-size: 23px;
-}
-.sheet-section img.decklist {
-  border-color: #8e784f66;
 }
 .read-layout {
   padding-bottom: 10px;

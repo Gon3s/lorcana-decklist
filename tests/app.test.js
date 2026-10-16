@@ -55,7 +55,7 @@ function input(selector, value, event = 'input') {
 await import('../docs/app.js');
 await new Promise((resolve) => setImmediate(resolve));
 
-test('DOM integration: catalogue search, key/core selection and legacy persistence', async () => {
+test('DOM integration: catalogue search, key/core selection and v2 persistence', async () => {
   assert.ok($('.hero'));
   assert.ok($('#nav-catalog'));
   click('#nav-catalog');
@@ -73,15 +73,16 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.ok($('.card-detail'));
   click('[data-close-dialog]');
   click('[data-action="home"]');
-  const storedDeckCount = JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length;
+  const storedDeckCount = JSON.parse(localStorage.getItem('grimoire-v2') || '[]').length;
+  assert.equal(storedDeckCount, 0);
   const deckCount = Number.parseInt($('#count').textContent, 10);
   click('[data-action="new"]');
   assert.equal($('.preview-panel'), null);
   assert.ok($('#create-name'));
-  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length, storedDeckCount);
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v2') || '[]').length, storedDeckCount);
   input('#create-name', 'Fiche abandonnée');
   click('[data-action="create-cancel"]');
-  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1') || '[]').length, storedDeckCount);
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v2') || '[]').length, storedDeckCount);
   click('[data-action="new"]');
   input('#create-name', 'Test de non-régression');
   input('#create-decklist', DUELS_DECKLIST);
@@ -99,7 +100,8 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   click('[data-action="create-finish"]');
   assert.ok($('#selected-card-sections'));
   assert.ok($('.decklist-overview').textContent.includes('60 cartes'));
-  assert.equal(JSON.parse(localStorage.getItem('grimoire-v1')).length, deckCount + 1);
+  assert.equal(JSON.parse(localStorage.getItem('grimoire-v2')).length, deckCount + 1);
+  assert.equal($('#image-file'), null);
   assert.equal($('.catalog-browser'), null);
   click('[data-pick-section="keys"]');
   assert.ok($('.card-picker-dialog'));
@@ -137,7 +139,7 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   );
   assert.equal($$('#section-keys .selected-card').length, 1);
   assert.equal(
-    JSON.parse(localStorage.getItem('grimoire-v1')).find(
+    JSON.parse(localStorage.getItem('grimoire-v2')).find(
       (deck) => deck.name === 'Test de non-régression',
     ).keys.length,
     1,
@@ -153,7 +155,7 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   assert.equal($$('#section-core .selected-card').length, 1);
   click('[data-picker-add]');
   assert.equal($$('#section-core .selected-card').length, 2);
-  const stored = JSON.parse(localStorage.getItem('grimoire-v1')).find(
+  const stored = JSON.parse(localStorage.getItem('grimoire-v2')).find(
     (deck) => deck.name === 'Test de non-régression',
   );
   assert.deepEqual(

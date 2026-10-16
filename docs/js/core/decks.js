@@ -12,7 +12,6 @@ export function createDeck() {
     format: '',
     author: '',
     version: '1.0',
-    image: '',
     source: '',
     decklist: [],
     keys: [],
@@ -24,23 +23,16 @@ export function createDeck() {
     mulligan: '',
     mulliganMatchup: '',
     updated: new Date().toISOString(),
-    example: false,
   };
 }
 
-/** Validate both legacy saved decks and schema v1 exports without mutating them. */
+/** Validate the current Duels.ink-backed deck format without mutating it. */
 export function validateDeck(value, { newIdentity = false } = {}) {
-  if (!value || typeof value !== 'object' || typeof value.name !== 'string') {
+  if (!value || typeof value !== 'object' || !cleanText(value.name).trim()) {
     throw new Error('Le nom de la fiche est manquant.');
   }
-  if (
-    !Array.isArray(value.inks) ||
-    value.inks.length > 2 ||
-    new Set(value.inks).size !== value.inks.length ||
-    value.inks.some((ink) => !INKS[ink])
-  ) {
-    throw new Error('La fiche doit contenir au maximum deux encres différentes.');
-  }
+  if (!Array.isArray(value.decklist) || !value.decklist.length)
+    throw new Error('La decklist Duels.ink est manquante.');
   const deck = createDeck();
   for (const key of [
     'name',
@@ -54,30 +46,30 @@ export function validateDeck(value, { newIdentity = false } = {}) {
     if (typeof value[key] === 'string') deck[key] = cleanText(value[key]);
   }
   if (!newIdentity && typeof value.id === 'string') deck.id = value.id;
-  deck.inks = [...value.inks];
-  deck.image = safeURL(value.image);
   deck.source = /^https?:/.test(value.source || '') ? safeURL(value.source) : '';
   deck.archetype = ARCHETYPES.includes(value.archetype) ? value.archetype : 'Autre';
-  deck.example = !newIdentity && value.example === true;
   if (!newIdentity && !Number.isNaN(Date.parse(value.updated))) deck.updated = value.updated;
-  if (value.decklist !== undefined && !Array.isArray(value.decklist))
-    throw new Error('Decklist invalide.');
-  deck.decklist = (value.decklist ?? []).map((row) => {
+  deck.decklist = value.decklist.map((row) => {
     if (!row || typeof row !== 'object' || typeof row.id !== 'string' || !row.id)
       throw new Error('Carte de decklist invalide.');
     const printingCode = normalizePrintingCode(row.printingCode);
     if (!isPrintingCode(printingCode)) throw new Error("Code d'impression de decklist invalide.");
+    const inks = Array.isArray(row.inks) ? [...new Set(row.inks.filter((ink) => INKS[ink]))] : [];
+    if (!inks.length || inks.length > 2) throw new Error('Encres de decklist invalides.');
     return {
       id: row.id,
       name: cleanText(row.name),
       qty: quantity(row.qty),
       image: safeURL(row.image),
       printingCode,
-      inks: Array.isArray(row.inks)
-        ? [...new Set(row.inks.filter((ink) => INKS[ink]))].slice(0, 2)
-        : [],
+      inks,
     };
   });
+  if (deck.decklist.reduce((total, row) => total + row.qty, 0) < 60)
+    throw new Error('La decklist doit contenir au moins 60 cartes.');
+  deck.inks = [...new Set(deck.decklist.flatMap((row) => row.inks))];
+  if (deck.inks.length > 2)
+    throw new Error('La fiche doit contenir au maximum deux encres différentes.');
   for (const section of [...Object.keys(CARD_SECTIONS), 'lines', 'favorable', 'unfavorable']) {
     if (!Array.isArray(value[section])) throw new Error('Rubrique manquante : ' + section);
     deck[section] = value[section].map((row) => {
@@ -98,11 +90,11 @@ export function validateDeck(value, { newIdentity = false } = {}) {
 }
 export function decodeDeckExport(text) {
   const document = JSON.parse(text);
-  if (document.schemaVersion !== 1) throw new Error('Version de fiche non prise en charge.');
+  if (document.schemaVersion !== 2) throw new Error('Version de fiche non prise en charge.');
   return validateDeck(document.deck, { newIdentity: true });
 }
 export function encodeDeckExport(deck) {
-  return JSON.stringify({ schemaVersion: 1, deck: validateDeck(deck) }, null, 2);
+  return JSON.stringify({ schemaVersion: 2, deck: validateDeck(deck) }, null, 2);
 }
 
 /** A card may be both key and core, but cannot appear twice in the same section. */

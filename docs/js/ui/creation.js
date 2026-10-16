@@ -53,7 +53,7 @@ function importStep(deck, input, error) {
         id="create-decklist"
         class="creation-decklist-input"
         data-create-field="decklist"
-        placeholder="4 Flash - Efficient Clerk (14-171)&#10;4 Mushu - Stealthy Dragon (13-D23-12)"
+        placeholder="Collez ici la liste exportée depuis Duels.ink"
         spellcheck="false"
         required
       >

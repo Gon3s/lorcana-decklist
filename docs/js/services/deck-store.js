@@ -1,10 +1,9 @@
 import { DECK_STORAGE_KEY } from '../core/constants.js';
 import { validateDeck } from '../core/decks.js';
 
-/** Keep the legacy key so existing users retain their collection after the refactor. */
-export function loadDecks(storage, fallback) {
+export function loadDecks(storage) {
   const raw = storage.getItem(DECK_STORAGE_KEY);
-  if (raw === null) return { decks: [fallback()], warnings: [] };
+  if (raw === null) return { decks: [], warnings: [] };
   const parsed = JSON.parse(raw);
   if (!Array.isArray(parsed)) throw new Error('La sauvegarde des fiches est invalide.');
   const decks = [],

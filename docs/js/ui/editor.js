@@ -1,5 +1,5 @@
 import { TABS, CARD_SECTIONS } from '../core/constants.js';
-import { esc, inkOptions } from './html.js';
+import { esc, inkOptions, inksHTML } from './html.js';
 import { safeURL } from '../core/utils.js';
 function field(current, label, key, placeholder = '', area = false) {
   return /* HTML */ `<div class="field"><label for="f-${key}">${label}</label><${area ? 'textarea' : 'input'} id="f-${key}" data-field="${key}" placeholder="${esc(placeholder)}" ${area ? '' : 'value="' + esc(current[key]) + '"'}>${area ? esc(current[key]) : ''}${area ? '</textarea>' : ''}</div>`;
@@ -27,49 +27,26 @@ export function identityForm(current) {
   return (
     field(current, 'Nom du deck *', 'name', 'Ex. Saphir Acier · Ramp') +
     /* HTML */ `<div class="field">
-      <label>Encres du deck * <small>- 1 ou 2 maximum</small></label
-      >${inkOptions(current.inks)}
+      <label>Encres détectées</label>
+      <div>${inksHTML(current.inks)}</div>
+      <p class="field-help creation-field-help">Déduites de la decklist importée.</p>
     </div>` +
     field(current, 'En quelques mots', 'description', 'Quel est le plan de votre deck ?', true) +
     /* HTML */ `<div class="two-cols">
-        <div class="field">
-          <label for="archetype">Archétype</label
-          ><select id="archetype" data-field="archetype">
-            ${['Aggro', 'Midrange', 'Contrôle', 'Combo', 'Tempo', 'Autre'].map((t) => /* HTML */ `<option ${current.archetype === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-        </div>
-        ${field(current, 'Format / extension', 'format', 'Ex. Construit · extension…')}
-      </div>
       <div class="field">
-        <label>Image complémentaire de la decklist</label>
-        <div
-          class="dropzone"
-          id="drop"
-          tabindex="0"
-          role="button"
-          aria-label="Ajouter une image de decklist"
-        >
-          ${safeURL(current.image) ? /* HTML */ `<img src="${esc(safeURL(current.image))}" alt="Decklist importée" />` : '<span style="font-size:28px;color:var(--accent)">⇧</span>'}<strong
-            >${current.image ? 'Remplacer la decklist' : 'Déposez votre image ici'}</strong
-          >
-          <p>
-            Cliquez pour choisir, ou collez avec Ctrl / ⌘ + V<br />PNG, JPG, WebP · 10 Mo maximum
-          </p>
-        </div>
-        <input
-          id="image-file"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          hidden
-        />${current.image ? '<button class="btn small ghost" style="margin-top:8px" data-action="remove-image">Retirer l’image</button>' : ''}
-      </div>` +
+        <label for="archetype">Archétype</label
+        ><select id="archetype" data-field="archetype">
+          ${['Aggro', 'Midrange', 'Contrôle', 'Combo', 'Tempo', 'Autre'].map((t) => /* HTML */ `<option ${current.archetype === t ? 'selected' : ''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      ${field(current, 'Format / extension', 'format', 'Ex. Construit · extension…')}
+    </div>` +
     field(current, 'Lien vers la decklist d’origine', 'source', 'https://…') +
     /* HTML */ `<div class="two-cols">
         ${field(current, 'Auteur', 'author', 'Votre pseudo')}${field(current, 'Version', 'version', '1.0')}
       </div>
       <p class="source-note">
-        La decklist textuelle importée reste la référence. L’image et le lien d’origine sont
-        facultatifs.
+        La decklist importée détermine les cartes et les encres. Le lien d’origine est facultatif.
       </p>`
   );
 }
@@ -247,28 +224,23 @@ ${esc(card.note)}</textarea>
     .join('');
 }
 export function cardsForm(deck) {
-  const decklist = deck.decklist?.length
-    ? /* HTML */ `<section class="decklist-overview">
-        <div class="section-heading">
-          <h3>Decklist importée</h3>
-          <span class="muted"
-            >${deck.decklist.reduce((sum, card) => sum + card.qty, 0)} cartes</span
-          >
-        </div>
-        <div class="decklist-overview-grid">
-          ${deck.decklist
-            .map(
-              (card) =>
-                /* HTML */ `<div>
-                  <strong>${esc(card.qty)}× ${esc(card.name)}</strong>
-                  <small>${esc(card.printingCode)}</small>
-                </div>`,
-            )
-            .join('')}
-        </div>
-      </section>`
-    : '';
-  return /* HTML */ `${decklist}
+  return /* HTML */ `<section class="decklist-overview">
+      <div class="section-heading">
+        <h3>Decklist importée</h3>
+        <span class="muted">${deck.decklist.reduce((sum, card) => sum + card.qty, 0)} cartes</span>
+      </div>
+      <div class="decklist-overview-grid">
+        ${deck.decklist
+          .map(
+            (card) =>
+              /* HTML */ `<div>
+                <strong>${esc(card.qty)}× ${esc(card.name)}</strong>
+                <small>${esc(card.printingCode)}</small>
+              </div>`,
+          )
+          .join('')}
+      </div>
+    </section>
     <h3 class="catalog-editor-title">Vos cartes, leurs rôles.</h3>
     <p class="field-help">
       Ouvrez la recherche depuis la rubrique voulue, sélectionnez plusieurs cartes puis validez. Une

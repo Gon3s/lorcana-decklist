@@ -1,10 +1,9 @@
 import { moveRow, toggleInk } from '../core/decks.js';
 import { quantity, cleanText } from '../core/utils.js';
-import { readDeckImage } from '../services/files.js';
 import { editorPage, identityForm, matchupsForm, strategyForm, cardsForm } from '../ui/editor.js';
 import { createCatalogFilters } from './catalog-controller.js';
 
-export function createEditorController({ state, app, query, toast, setNavigation, save }) {
+export function createEditorController({ state, app, query, setNavigation, save }) {
   const $ = query;
 
   function openEditor(deck) {
@@ -34,47 +33,6 @@ export function createEditorController({ state, app, query, toast, setNavigation
     };
     $('#form').innerHTML =
       state.tab === 'cards' ? cardsForm(state.current) : forms[state.tab](state.current);
-    if ($('#drop')) {
-      const drop = $('#drop');
-      drop.onclick = () => $('#image-file').click();
-      drop.onkeydown = (event) => {
-        if (['Enter', ' '].includes(event.key)) {
-          event.preventDefault();
-          $('#image-file').click();
-        }
-      };
-      $('#image-file').onchange = (event) => loadImage(event.target.files[0]);
-      drop.ondragover = (event) => {
-        event.preventDefault();
-        drop.classList.add('dragover');
-      };
-      drop.ondragleave = () => drop.classList.remove('dragover');
-      drop.ondrop = (event) => {
-        event.preventDefault();
-        loadImage(event.dataTransfer.files[0]);
-      };
-    }
-  }
-
-  async function loadImage(file) {
-    if (!file) return;
-    try {
-      const deck = state.current;
-      const image = await readDeckImage(file);
-      if (state.current !== deck || state.mode !== 'edit') return;
-      deck.image = image;
-      save();
-      renderForm();
-      toast('Decklist ajoutée.');
-    } catch (error) {
-      toast(error.message || 'Impossible de lire cette image.');
-    }
-  }
-
-  function removeImage() {
-    state.current.image = '';
-    save();
-    renderForm();
   }
 
   function handleInput(event) {
@@ -109,10 +67,7 @@ export function createEditorController({ state, app, query, toast, setNavigation
     }
     if (data.ink) {
       const [section, index] = data.inkTarget.split(':');
-      toggleInk(
-        section === 'deck' ? state.current.inks : state.current[section][Number(index)].inks,
-        data.ink,
-      );
+      toggleInk(state.current[section][Number(index)].inks, data.ink);
       save();
       renderForm();
       return true;
@@ -147,27 +102,12 @@ export function createEditorController({ state, app, query, toast, setNavigation
     return false;
   }
 
-  function bindPaste() {
-    document.addEventListener('paste', (event) => {
-      if (state.mode !== 'edit' || state.tab !== 'identity') return;
-      const file = [...(event.clipboardData?.items || [])]
-        .find((item) => item.type.startsWith('image/'))
-        ?.getAsFile();
-      if (file) {
-        event.preventDefault();
-        loadImage(file);
-      }
-    });
-  }
-
   return {
     openEditor,
     renderEditor,
     renderForm,
-    removeImage,
     handleInput,
     handleChange,
     handleClick,
-    bindPaste,
   };
 }

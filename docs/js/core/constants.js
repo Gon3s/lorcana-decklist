@@ -25,7 +25,7 @@ export const CARD_TYPES = {
   items: 'Objet',
   locations: 'Lieu',
 };
-export const DECK_STORAGE_KEY = 'grimoire-v1';
+export const DECK_STORAGE_KEY = 'grimoire-v2';
 export const CATALOG_URL = 'https://api.lorcana.ravensburger.com/v3/catalog/fr';
 export const CATALOG_SNAPSHOT_URL = 'assets/catalog.json';
 export const CATALOG_PAGE_SIZE = 24;

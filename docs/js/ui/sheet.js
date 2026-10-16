@@ -22,39 +22,25 @@ export function sheet(d) {
         </section>`
       : '';
   const decklist = () => {
-    if (d.decklist?.length)
-      return /* HTML */ `<section class="sheet-section">
-        <h3>La decklist</h3>
-        <div class="sheet-decklist">
-          ${d.decklist
-            .map(
-              (card) =>
-                /* HTML */ `<div>
-                  <strong
-                    ><span class="sheet-pill">${esc(card.qty)}×</span>${esc(card.name)}</strong
-                  >
-                  <small>${esc(card.printingCode)}</small>
-                </div>`,
-            )
-            .join('')}
-        </div>
-      </section>`;
-    if (safeURL(d.image))
-      return /* HTML */ `<section class="sheet-section">
-        <h3>La decklist</h3>
-        <img
-          class="decklist"
-          src="${esc(safeURL(d.image))}"
-          alt="Decklist ${esc(d.name)}"
-          data-action="zoom"
-        />
-      </section>`;
-    return '<section class="sheet-section"><h3>La decklist</h3><div class="empty-block">Importez une decklist Duels.ink lors de la création.</div></section>';
+    return /* HTML */ `<section class="sheet-section">
+      <h3>La decklist</h3>
+      <div class="sheet-decklist">
+        ${d.decklist
+          .map(
+            (card) =>
+              /* HTML */ `<div>
+                <strong><span class="sheet-pill">${esc(card.qty)}×</span>${esc(card.name)}</strong>
+                <small>${esc(card.printingCode)}</small>
+              </div>`,
+          )
+          .join('')}
+      </div>
+    </section>`;
   };
   return /* HTML */ `<article class="sheet" style="${colors(d)}">
     <div class="sheet-head">
       <div class="sheet-running"><span>GRIMOIRE / LORCANA</span><span>NOTES DE JEU</span></div>
-      <div class="eyebrow">GUIDE DE DECK ${d.example ? '· EXEMPLE' : ''}</div>
+      <div class="eyebrow">GUIDE DE DECK</div>
       <div>${inksHTML(d.inks)}</div>
       <h2>${esc(d.name || 'Le nom de votre deck')}</h2>
       <p>${esc(d.description || 'Votre plan de jeu en quelques mots…')}</p>

@@ -11,17 +11,35 @@ import {
   toggleInk,
   moveRow,
 } from '../docs/js/core/decks.js';
-import { createSampleDeck } from '../docs/js/core/sample.js';
 import { loadDecks, saveDecks } from '../docs/js/services/deck-store.js';
 import { DECK_STORAGE_KEY } from '../docs/js/core/constants.js';
 
 const card = { id: 'merlin', name: 'Merlin - En chèvre', image: 'https://example.com/card.png' };
-test('legacy exports round-trip images, notes and order without reusing identity', () => {
-  const deck = createSampleDeck();
-  deck.image = 'data:image/png;base64,aGVsbG8=';
+
+function validDeck() {
+  const deck = createDeck();
+  deck.name = 'Import Duels.ink';
+  deck.inks = ['emerald'];
+  deck.decklist = [
+    {
+      id: 'mushu',
+      name: 'Mushu - Dragon furtif',
+      qty: 60,
+      image: 'https://example.com/mushu.jpg',
+      printingCode: '13-D23-12',
+      inks: ['emerald'],
+    },
+  ];
+  return deck;
+}
+
+test('schema v2 exports round-trip decklists, notes and order without reusing identity', () => {
+  const deck = validDeck();
+  addCatalogCard(deck, 'keys', card);
+  deck.keys[0].note = 'Synergie';
   const restored = decodeDeckExport(encodeDeckExport(deck));
   assert.notEqual(restored.id, deck.id);
-  for (const key of ['name', 'inks', 'image', 'keys', 'core', 'lines', 'mulligan'])
+  for (const key of ['name', 'inks', 'decklist', 'keys', 'core', 'lines', 'mulligan'])
     assert.deepEqual(restored[key], validateDeck(deck)[key]);
 });
 test('a card can be key and core without duplicates in either section', () => {
@@ -50,21 +68,9 @@ test('catalog cards can be added as one duplicate-safe batch', () => {
   assert.throws(() => addCatalogCards(deck, 'keys', null), /Liste de cartes/);
 });
 test('full decklists round-trip and feed strategic selections without duplicate state', () => {
-  const deck = createDeck();
-  deck.name = 'Import Duels.ink';
-  deck.inks = ['emerald'];
-  deck.decklist = [
-    {
-      id: 'mushu',
-      name: 'Mushu - Dragon furtif',
-      qty: 4,
-      image: 'https://example.com/mushu.jpg',
-      printingCode: '13-D23-12',
-      inks: ['emerald'],
-    },
-  ];
+  const deck = validDeck();
   assert.equal(toggleSectionCard(deck, 'keys', deck.decklist[0]), true);
-  assert.equal(deck.keys[0].qty, 4);
+  assert.equal(deck.keys[0].qty, 60);
   assert.equal(toggleSectionCard(deck, 'core', deck.decklist[0]), true);
   assert.equal(toggleSectionCard(deck, 'keys', deck.decklist[0]), false);
   const restored = decodeDeckExport(encodeDeckExport(deck));
@@ -79,8 +85,23 @@ test('two distinct inks maximum in UI and imports', () => {
   assert.deepEqual(inks, ['ruby', 'amethyst']);
   toggleInk(inks, 'ruby');
   assert.deepEqual(inks, ['amethyst']);
-  assert.throws(() => validateDeck({ ...createDeck(), inks: ['ruby', 'ruby'] }));
-  assert.throws(() => validateDeck({ ...createDeck(), inks: ['ruby', 'steel', 'amber'] }));
+  const deck = validDeck();
+  deck.decklist.push({
+    ...deck.decklist[0],
+    id: 'three-inks',
+    qty: 1,
+    inks: ['ruby', 'steel'],
+  });
+  assert.throws(() => validateDeck(deck), /deux encres/);
+});
+test('only schema v2 Duels.ink decks are accepted', () => {
+  const deck = validDeck();
+  assert.throws(() => validateDeck({ ...deck, decklist: [] }), /Decklist|decklist/);
+  assert.throws(
+    () => decodeDeckExport(JSON.stringify({ schemaVersion: 1, deck })),
+    /Version de fiche/,
+  );
+  assert.equal(JSON.parse(encodeDeckExport(deck)).schemaVersion, 2);
 });
 test('reordering is bounded and preserves the rows', () => {
   const rows = ['a', 'b', 'c'];
@@ -88,8 +109,8 @@ test('reordering is bounded and preserves the rows', () => {
   assert.equal(moveRow(rows, 0, 1), true);
   assert.deepEqual(rows, ['b', 'a', 'c']);
 });
-test('legacy localStorage remains readable; bad entries are not overwritten during load', () => {
-  const source = JSON.stringify([createSampleDeck(), { broken: true }]);
+test('v2 localStorage loads valid decks and does not overwrite bad entries', () => {
+  const source = JSON.stringify([validDeck(), { broken: true }]);
   const storage = {
     getItem: (key) => {
       assert.equal(key, DECK_STORAGE_KEY);
@@ -97,9 +118,13 @@ test('legacy localStorage remains readable; bad entries are not overwritten duri
     },
     setItem: () => assert.fail('read must not write'),
   };
-  const loaded = loadDecks(storage, createSampleDeck);
+  const loaded = loadDecks(storage);
   assert.equal(loaded.decks.length, 1);
   assert.equal(loaded.warnings.length, 1);
+});
+test('fresh storage starts with no example deck', () => {
+  const loaded = loadDecks({ getItem: () => null });
+  assert.deepEqual(loaded, { decks: [], warnings: [] });
 });
 test('storage failures reach the controller instead of reporting success', () => {
   assert.throws(
@@ -116,18 +141,20 @@ test('storage failures reach the controller instead of reporting success', () =>
   );
 });
 test('untrusted images and links are removed on import', () => {
-  const value = createSampleDeck();
-  value.image = 'javascript:alert(1)';
+  const value = validDeck();
   value.source = 'javascript:alert(1)';
+  addCatalogCard(value, 'keys', card);
   value.keys[0].image = 'data:text/html;base64,YQ==';
+  value.decklist[0].image = 'javascript:alert(1)';
   const deck = validateDeck(value);
-  assert.equal(deck.image, '');
   assert.equal(deck.source, '');
   assert.equal(deck.keys[0].image, '');
+  assert.equal(deck.decklist[0].image, '');
 });
 
-test('imported legacy names and notes use ASCII hyphens', () => {
-  const value = createSampleDeck();
+test('imported names and notes use ASCII hyphens', () => {
+  const value = validDeck();
+  addCatalogCard(value, 'keys', card);
   value.name = 'Titre\u2014version';
   value.keys[0].note = 'Rôle\u2013conseil';
   const deck = validateDeck(value);

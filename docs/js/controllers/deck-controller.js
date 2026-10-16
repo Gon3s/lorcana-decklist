@@ -1,11 +1,9 @@
 import { decodeDeckExport, encodeDeckExport } from '../core/decks.js';
-import { createSampleDeck } from '../core/sample.js';
 import { normalize, uid } from '../core/utils.js';
 import { loadDecks, saveDecks } from '../services/deck-store.js';
 import { downloadText, readJSONFile } from '../services/files.js';
 import { collectionPage, deckGrid } from '../ui/collection.js';
-import { openDialog, confirmAction } from '../ui/dialog.js';
-import { esc } from '../ui/html.js';
+import { confirmAction } from '../ui/dialog.js';
 import { sheet } from '../ui/sheet.js';
 
 export function createDeckController({ state, app, query, toast, setNavigation, editor }) {
@@ -113,15 +111,12 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
       case 'edit-current':
         editor.openEditor(state.current);
         return true;
-      case 'remove-image':
-        editor.removeImage();
-        return true;
       case 'export':
         downloadText(
           encodeDeckExport(state.current),
           normalize(state.current.name || 'fiche-lorcana').replace(/[^a-z0-9]+/g, '-') + '.json',
         );
-        toast('Fiche exportée, image comprise.');
+        toast('Fiche exportée.');
         return true;
       case 'print':
         return (async () => {
@@ -133,7 +128,6 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
         Object.assign(copy, {
           id: uid(),
           name: copy.name + ' (copie)',
-          example: false,
           updated: new Date().toISOString(),
         });
         state.decks.unshift(copy);
@@ -157,14 +151,6 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
             toast('Fiche supprimée.');
           }
         })();
-      case 'zoom': {
-        const dialog = openDialog(
-          `<img class="full-image" src="${esc(state.current.image)}" alt="Decklist agrandie">`,
-          'image-dialog',
-        );
-        dialog.focus();
-        return true;
-      }
       default:
         return false;
     }
@@ -192,12 +178,12 @@ export function createDeckController({ state, app, query, toast, setNavigation, 
 
   function loadInitial() {
     try {
-      const loaded = loadDecks(localStorage, createSampleDeck);
+      const loaded = loadDecks(localStorage);
       state.decks = loaded.decks;
       if (loaded.warnings.length)
         toast('Certaines fiches sont illisibles. La sauvegarde originale n’a pas été modifiée.');
     } catch {
-      state.decks = [createSampleDeck()];
+      state.decks = [];
       toast('La sauvegarde locale est indisponible. Exportez vos fiches pour les conserver.');
     }
   }

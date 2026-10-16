@@ -115,7 +115,7 @@ export function deckGrid(decks, { query, inkFilter, typeFilter }) {
           /* HTML */ `<article class="deck-card">
             <div class="deck-issue">
               <span>GRIMOIRE / ${String(index + 1).padStart(2, '0')}</span
-              ><span>${d.example ? 'ÉTUDE DE CAS' : 'NOTES PERSONNELLES'}</span>
+              ><span>NOTES PERSONNELLES</span>
             </div>
             <div
               class="deck-cover"
@@ -127,30 +127,21 @@ export function deckGrid(decks, { query, inkFilter, typeFilter }) {
               aria-label="Ouvrir ${esc(d.name)}"
             >
               ${
-                safeURL(d.image)
-                  ? /* HTML */ `<img
-                      src="${esc(safeURL(d.image))}"
-                      alt="Decklist"
-                      loading="lazy"
-                    />`
-                  : d.keys.some((c) => safeURL(c.image))
-                    ? '<div class="cover-cards">' +
-                      d.keys
-                        .filter((c) => safeURL(c.image))
-                        .slice(0, 3)
-                        .map(
-                          (c) => '<img src="' + esc(safeURL(c.image)) + '" alt="" loading="lazy">',
-                        )
-                        .join('') +
-                      '</div>'
-                    : '<span class="cover-glyph">✦</span>'
+                d.keys.some((c) => safeURL(c.image))
+                  ? '<div class="cover-cards">' +
+                    d.keys
+                      .filter((c) => safeURL(c.image))
+                      .slice(0, 3)
+                      .map((c) => '<img src="' + esc(safeURL(c.image)) + '" alt="" loading="lazy">')
+                      .join('') +
+                    '</div>'
+                  : '<span class="cover-glyph">✦</span>'
               }
               <div class="cover-label">${inksHTML(d.inks)}</div>
             </div>
             <div class="deck-body">
               <div class="deck-meta">
-                <span class="tag">${esc(d.archetype)}</span
-                >${d.example ? '<span class="tag example">Exemple</span>' : '<span class="tag">Personnel</span>'}
+                <span class="tag">${esc(d.archetype)}</span><span class="tag">Duels.ink</span>
               </div>
               <h3 data-action="read" data-id="${esc(d.id)}">${esc(d.name || 'Sans titre')}</h3>
               <p>${esc(d.description || 'Votre stratégie reste à écrire.')}</p>

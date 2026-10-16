@@ -48,7 +48,6 @@ const editor = createEditorController({
   state,
   app,
   query: $,
-  toast,
   setNavigation,
   save: () => deck.save(),
 });
@@ -171,7 +170,6 @@ $('.brand').onclick = (event) => {
 };
 
 deck.bindImport();
-editor.bindPaste();
 catalog.bindImportInput($('#catalog-import-file'));
 deck.loadInitial();
 restoreRoute();

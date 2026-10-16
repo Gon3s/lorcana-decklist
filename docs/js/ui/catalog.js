@@ -1,5 +1,5 @@
 import { cardPrinting } from '../core/catalog.js';
-import { CARD_SECTIONS, CARD_TYPES, INKS } from '../core/constants.js';
+import { CARD_TYPES, INKS } from '../core/constants.js';
 import { esc, inkIcon, inksHTML, selectOptions } from './html.js';
 import { safeURL } from '../core/utils.js';
 
@@ -44,7 +44,7 @@ export function catalogPage({ document, count, warning, busy }) {
     </p>`;
 }
 
-export function catalogBrowser({ document, filters, context = 'manage', target = 'keys', deck }) {
+export function catalogBrowser({ document, filters }) {
   if (!document)
     return /* HTML */ `<div class="empty-block">
       Catalogue indisponible.
@@ -54,35 +54,6 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
   for (const card of [...document.cards, ...document.custom])
     for (const set of card.set) if (!sets.has(set)) sets.set(set, set);
   return /* HTML */ `<section class="catalog-browser" aria-label="Recherche de cartes">
-    ${
-      context === 'picker'
-        ? /* HTML */ `<div class="catalog-picker-heading">
-              <strong>Ajouter depuis le catalogue</strong
-              ><button class="btn small ghost" data-action="catalog-manage">
-                Gérer le catalogue ↗
-              </button>
-            </div>
-            <div class="catalog-targets" role="group" aria-label="Rubrique de destination">
-              ${Object.entries(CARD_SECTIONS)
-                .map(
-                  ([id, label]) =>
-                    /* HTML */ `<button
-                      type="button"
-                      class="catalog-target ${target === id ? 'selected' : ''}"
-                      data-card-target="${id}"
-                      aria-pressed="${target === id}"
-                    >
-                      <strong>${label}</strong
-                      ><span
-                        >${deck?.[id]?.length || 0}
-                        carte${deck?.[id]?.length === 1 ? '' : 's'}</span
-                      >
-                    </button>`,
-                )
-                .join('')}
-            </div>`
-        : ''
-    }
     <div class="catalog-filters">
       <div class="field catalog-search">
         <label for="card-search">Nom ou texte de carte</label>
@@ -154,27 +125,23 @@ export function catalogBrowser({ document, filters, context = 'manage', target =
       </div>
     </div>
     <div class="catalog-search-footer">
-      ${context === 'picker' ? /* HTML */ `<label class="checkbox-label"><input id="card-deck-only" type="checkbox" data-card-filter="deckOnly" ${filters.deckOnly ? 'checked' : ''} ${deck?.inks.length ? '' : 'disabled'} /> Encres du deck uniquement</label>` : '<span></span>'}
+      <span></span>
       <button class="text-button" data-action="catalog-clear-filters">
         Réinitialiser les filtres
       </button>
     </div>
     <div id="catalog-result-count" class="catalog-result-count" aria-live="polite"></div>
     <div id="catalog-results" class="catalog-card-grid"></div>
-    <div id="catalog-selection"></div>
     <div id="catalog-pagination" class="catalog-pagination"></div>
   </section>`;
 }
 
-export function catalogResults(result, { context, target, deck, selectedSet, selection = [] }) {
-  const selected = new Set(selection);
+export function catalogResults(result, { selectedSet }) {
   return (
     result.cards
       .map((card) => {
         const printing = cardPrinting(card, selectedSet);
-        const present = context === 'picker' && deck?.[target]?.some((row) => row.id === card.id);
-        const pending = selected.has(card.id);
-        return /* HTML */ `<article class="catalog-card ${pending ? 'selected' : ''}">
+        return /* HTML */ `<article class="catalog-card">
           <button
             class="catalog-card-visual"
             data-card-preview="${esc(card.id)}"
@@ -189,52 +156,20 @@ export function catalogResults(result, { context, target, deck, selectedSet, sel
             <div class="catalog-card-inks">${inksHTML(card.inks)}</div>
           </div>
           <div class="catalog-card-actions">
-            ${
-              context === 'picker'
-                ? /* HTML */ `<button
-                    class="btn small ${present ? 'ghost' : pending ? 'selected' : 'primary'}"
-                    data-select-card="${esc(card.id)}"
-                    aria-pressed="${pending}"
-                    ${present ? 'disabled' : ''}
-                  >
-                    ${present ? '✓ Déjà ajoutée' : pending ? '✓ Sélectionnée' : '＋ Sélectionner'}
-                  </button>`
-                : /* HTML */ ` <button class="btn small" data-edit-catalog-card="${esc(card.id)}">
-                      Modifier
-                    </button>
-                    <button
-                      class="btn small ghost"
-                      data-hide-catalog-card="${esc(card.id)}"
-                      aria-label="Masquer ${esc(card.name)}"
-                    >
-                      Retirer
-                    </button>`
-            }
+            <button class="btn small" data-edit-catalog-card="${esc(card.id)}">Modifier</button>
+            <button
+              class="btn small ghost"
+              data-hide-catalog-card="${esc(card.id)}"
+              aria-label="Masquer ${esc(card.name)}"
+            >
+              Retirer
+            </button>
           </div>
         </article>`;
       })
       .join('') ||
     '<div class="empty-block catalog-empty">Aucune carte ne correspond. Modifiez vos filtres ou ajoutez une carte manuellement.</div>'
   );
-}
-export function catalogSelection(cards, target) {
-  if (!cards.length) return '';
-  const label = CARD_SECTIONS[target];
-  return /* HTML */ `<div class="catalog-selection" aria-live="polite">
-    <div class="catalog-selection-copy">
-      <strong
-        >${cards.length} carte${cards.length === 1 ? '' : 's'}
-        sélectionnée${cards.length === 1 ? '' : 's'}</strong
-      >
-      <span>Destination : ${label} · ${cards.map((card) => esc(card.name)).join(' · ')}</span>
-    </div>
-    <div class="catalog-selection-actions">
-      <button class="btn small ghost" data-clear-card-selection>Effacer</button>
-      <button class="btn small primary" data-add-card-selection>
-        Ajouter ${cards.length} carte${cards.length === 1 ? '' : 's'}
-      </button>
-    </div>
-  </div>`;
 }
 export function catalogPagination(result) {
   return /* HTML */ `<button

@@ -48,7 +48,6 @@ const editor = createEditorController({
   query: $,
   toast,
   setNavigation,
-  catalog,
   save: () => deck.save(),
 });
 deck = createDeckController({ state, app, query: $, toast, setNavigation, editor });

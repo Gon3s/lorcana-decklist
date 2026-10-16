@@ -246,12 +246,11 @@ ${esc(card.note)}</textarea>
     )
     .join('');
 }
-export function cardsForm(deck, browser) {
+export function cardsForm(deck) {
   return /* HTML */ `<h3 class="catalog-editor-title">Vos cartes, leurs rôles.</h3>
     <p class="field-help">
-      Recherchez une carte puis ajoutez-la aux cartes clés, au core ou aux techs. Une carte peut
-      appartenir à plusieurs rubriques.
+      Ouvrez la recherche depuis la rubrique voulue, sélectionnez plusieurs cartes puis validez. Une
+      carte peut appartenir à plusieurs rubriques.
     </p>
-    ${browser}
     <div id="selected-card-sections">${cardSections(deck)}</div>`;
 }

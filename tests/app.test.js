@@ -93,34 +93,38 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
   click('[data-action="create-finish"]');
   assert.ok($('#selected-card-sections'));
   assert.equal(JSON.parse(localStorage.getItem('grimoire-v1')).length, deckCount + 1);
-  assert.equal($('#card-deck-only').checked, true);
-  assert.equal($$('[data-catalog-ink].selected').length, 2);
-  $('#card-deck-only').checked = false;
-  $('#card-deck-only').dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal($$('[data-catalog-ink].selected').length, 0);
-  assert.equal($('#card-deck-only').checked, false);
-  $('#card-deck-only').checked = true;
-  $('#card-deck-only').dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal($$('[data-catalog-ink].selected').length, 2);
-  click('[data-catalog-ink="emerald"]');
-  assert.equal($('#card-deck-only').checked, false);
-  assert.equal($$('[data-catalog-ink].selected').length, 3);
-  assert.equal(window.document.activeElement.dataset.catalogInk, 'emerald');
-  input('#card-search', 'merlin');
-  const cardButtons = $$('[data-select-card]');
+  assert.equal($('.catalog-browser'), null);
+  click('[data-pick-section="keys"]');
+  assert.ok($('.card-picker-dialog'));
+  assert.equal($('[data-picker-filter="deckOnly"]').checked, true);
+  click('[data-picker-toggle-filters]');
+  assert.equal($$('[data-picker-ink].selected').length, 2);
+  $('[data-picker-filter="deckOnly"]').checked = false;
+  $('[data-picker-filter="deckOnly"]').dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal($$('[data-picker-ink].selected').length, 0);
+  assert.equal($('[data-picker-filter="deckOnly"]').checked, false);
+  $('[data-picker-filter="deckOnly"]').checked = true;
+  $('[data-picker-filter="deckOnly"]').dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal($$('[data-picker-ink].selected').length, 2);
+  click('[data-picker-ink="emerald"]');
+  assert.equal($('[data-picker-filter="deckOnly"]').checked, false);
+  assert.equal($$('[data-picker-ink].selected').length, 3);
+  assert.equal(window.document.activeElement.dataset.pickerInk, 'emerald');
+  input('#card-picker-search', 'merlin');
+  const cardButtons = $$('[data-picker-select]');
   assert.ok(cardButtons.length > 1);
-  const id = cardButtons[0].dataset.selectCard;
-  const secondId = cardButtons[1].dataset.selectCard;
-  click('[data-select-card="' + id + '"]');
-  assert.ok($('.catalog-selection'));
-  click('[data-clear-card-selection]');
-  assert.equal($('.catalog-selection'), null);
-  click('[data-select-card="' + id + '"]');
-  click('[data-select-card="' + secondId + '"]');
-  assert.equal($('#card-search').value, 'merlin');
-  assert.equal($$('[data-select-card][aria-pressed="true"]').length, 2);
+  const id = cardButtons[0].dataset.pickerSelect;
+  const secondId = cardButtons[1].dataset.pickerSelect;
+  click('[data-picker-select="' + id + '"]');
+  assert.ok($('.card-picker-selection'));
+  click('[data-picker-clear-selection]');
+  assert.equal($$('[data-picker-select][aria-pressed="true"]').length, 0);
+  click('[data-picker-select="' + id + '"]');
+  click('[data-picker-select="' + secondId + '"]');
+  assert.equal($('#card-picker-search').value, 'merlin');
+  assert.equal($$('[data-picker-select][aria-pressed="true"]').length, 2);
   assert.ok(
-    $('.catalog-selection').textContent.replace(/\s+/g, ' ').includes('2 cartes sélectionnées'),
+    $('.card-picker-selection').textContent.replace(/\s+/g, ' ').includes('2 cartes sélectionnées'),
   );
   assert.equal($$('#section-keys .selected-card').length, 0);
   assert.equal(
@@ -129,14 +133,14 @@ test('DOM integration: catalogue search, key/core selection and legacy persisten
     ).keys.length,
     0,
   );
-  click('[data-add-card-selection]');
-  assert.equal($$('[data-select-card]:disabled').length, 2);
+  click('[data-picker-add]');
+  assert.equal($('.card-picker-dialog'), null);
   assert.equal($$('#section-keys .selected-card').length, 2);
-  assert.equal($('[data-card-target="keys"] span').textContent.replace(/\s+/g, ' '), '2 cartes');
-  click('[data-card-target="core"]');
-  click('[data-select-card="' + id + '"]');
+  click('[data-pick-section="core"]');
+  input('#card-picker-search', 'merlin');
+  click('[data-picker-select="' + id + '"]');
   assert.equal($$('#section-core .selected-card').length, 0);
-  click('[data-add-card-selection]');
+  click('[data-picker-add]');
   assert.equal($$('#section-core .selected-card').length, 1);
   const stored = JSON.parse(localStorage.getItem('grimoire-v1')).find(
     (deck) => deck.name === 'Test de non-régression',

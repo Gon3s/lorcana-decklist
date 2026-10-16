@@ -4,7 +4,7 @@ import { readDeckImage } from '../services/files.js';
 import { editorPage, identityForm, matchupsForm, strategyForm, cardsForm } from '../ui/editor.js';
 import { createCatalogFilters } from './catalog-controller.js';
 
-export function createEditorController({ state, app, query, toast, setNavigation, catalog, save }) {
+export function createEditorController({ state, app, query, toast, setNavigation, save }) {
   const $ = query;
 
   function openEditor(deck) {
@@ -33,10 +33,7 @@ export function createEditorController({ state, app, query, toast, setNavigation
       strategy: strategyForm,
     };
     $('#form').innerHTML =
-      state.tab === 'cards'
-        ? cardsForm(state.current, catalog.browserMarkup())
-        : forms[state.tab](state.current);
-    if (state.tab === 'cards') catalog.renderResults();
+      state.tab === 'cards' ? cardsForm(state.current) : forms[state.tab](state.current);
     if ($('#drop')) {
       const drop = $('#drop');
       drop.onclick = () => $('#image-file').click();
